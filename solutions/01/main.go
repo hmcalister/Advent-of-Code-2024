@@ -27,7 +27,7 @@ func main() {
 	defer inputFile.Close()
 
 	fileScanner := bufio.NewScanner(inputFile)
-	result, err := Part01(fileScanner)
+	result, err := Part02(fileScanner)
 	if err != nil {
 		slog.Error("error processing file input", "error", err)
 	}
@@ -64,5 +64,22 @@ func Part01(fileScanner *bufio.Scanner) (int, error) {
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	list1 := make([]int, 0)
+	list2 := make(map[int]int)
+	for fileScanner.Scan() {
+		line := fileScanner.Text()
+		lineIntegers := strings.Split(line, "   ")
+		i1, _ := strconv.Atoi(lineIntegers[0])
+		i2, _ := strconv.Atoi(lineIntegers[1])
+		list1 = append(list1, i1)
+		list2[i2] += 1
+		slog.Debug("list two count", "integer", i2, "count", list2[i2])
+	}
+
+	score := 0
+	for _, i := range list1 {
+		score += list2[i] * i
+	}
+
+	return score, nil
 }
