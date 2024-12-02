@@ -55,3 +55,18 @@ func isSafe(levels []string) bool {
 	return true
 }
 
+func Part01(fileScanner *bufio.Scanner) (int, error) {
+	totalSafe := 0
+	for fileScanner.Scan() {
+		line := fileScanner.Text()
+		levels := strings.Split(line, " ")
+		levelSafe := isSafe(levels)
+		slog.Info("safety determined", "levels", levels, "safe", levelSafe)
+		if levelSafe {
+			totalSafe += 1
+		}
+
+	}
+	return totalSafe, nil
+}
+
