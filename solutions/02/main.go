@@ -35,3 +35,23 @@ func main() {
 	slog.Info("computation completed", "result", result)
 }
 
+func isSafe(levels []string) bool {
+	previousValue, _ := strconv.Atoi(levels[0])
+	currentValue, _ := strconv.Atoi(levels[1])
+	isIncreasing := (currentValue - previousValue) > 0
+	for _, level := range levels[1:] {
+		currentValue, _ = strconv.Atoi(level)
+		difference := currentValue - previousValue
+		if !isIncreasing {
+			difference *= -1
+		}
+		if difference < 1 || difference > 3 {
+			return false
+		}
+
+		previousValue = currentValue
+	}
+
+	return true
+}
+
