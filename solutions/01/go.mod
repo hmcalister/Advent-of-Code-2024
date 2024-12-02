@@ -1,3 +1,3 @@
-module hmcalister/01
+module hmcalister/AdventOfCode
 
-go 1.21.0
+go 1.23.0
