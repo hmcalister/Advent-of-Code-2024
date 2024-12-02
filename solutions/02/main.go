@@ -70,3 +70,31 @@ func Part01(fileScanner *bufio.Scanner) (int, error) {
 	return totalSafe, nil
 }
 
+func Part02(fileScanner *bufio.Scanner) (int, error) {
+	totalSafe := 0
+reportLoop:
+	for fileScanner.Scan() {
+		line := fileScanner.Text()
+		levels := strings.Split(line, " ")
+		levelSafe := isSafe(levels)
+		slog.Info("undamped safety determined", "levels", levels, "safe", levelSafe)
+		if levelSafe {
+			totalSafe += 1
+			continue reportLoop
+		}
+
+		tempLevels := make([]string, len(levels)-1)
+		for i := range len(levels) {
+			copy(tempLevels, levels[:i])
+			copy(tempLevels[i:], levels[i+1:])
+			levelSafe = isSafe(tempLevels)
+			slog.Debug("damped safety determined", "dampedLevelIndex", i, "dampedSlice", tempLevels, "safe", levelSafe)
+			if levelSafe {
+				totalSafe += 1
+				continue reportLoop
+			}
+		}
+
+	}
+	return totalSafe, nil
+}
