@@ -5,6 +5,9 @@ import (
 	"flag"
 	"log/slog"
 	"os"
+	"regexp"
+	"strconv"
+	"strings"
 )
 
 func main() {
@@ -30,7 +33,26 @@ func main() {
 }
 
 func Part01(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	total := 0
+	for fileScanner.Scan() {
+		line := fileScanner.Text()
+		slog.Debug("line read", "line", line)
+		exp := regexp.MustCompile(`mul\((\d{1,3}),(\d{1,3})\)`)
+
+		foundMatches := exp.FindAllStringSubmatch(line, -1)
+		slog.Debug("regex applied", "matches", foundMatches)
+
+		for _, match := range foundMatches {
+			slog.Debug("match loop", "match", match)
+			v1, _ := strconv.Atoi(match[1])
+			v2, _ := strconv.Atoi(match[2])
+			total += v1 * v2
+			slog.Debug("match calculation", "v1", v1, "v2", v2, "mul", v1*v2, "new total", total)
+		}
+
+	}
+
+	return total, nil
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
