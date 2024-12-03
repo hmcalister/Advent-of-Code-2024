@@ -7,17 +7,14 @@ import (
 	"os"
 )
 
-const (
-	INPUT_FILE_PATH = "puzzleInput"
-)
-
 func main() {
 	debugFlag := flag.Bool("debug", false, "Debug Flag")
+	inputFilePath := flag.String("inputFile", "puzzleInput", "Path to input file.")
 	flag.Parse()
 	logFileHandler := SetLogging(*debugFlag)
 	defer logFileHandler.Close()
 
-	inputFile, err := os.Open(INPUT_FILE_PATH)
+	inputFile, err := os.Open(*inputFilePath)
 	if err != nil {
 		slog.Error("error opening input file", "error", err)
 	}
