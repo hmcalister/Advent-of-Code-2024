@@ -91,7 +91,7 @@ func parseUpdateLine(updateLine []string) []int {
 	return updatePagesList
 }
 
-func isPageValid(page int, requiredPrecedingPages []int, updatePages []int, addedPages []int) bool {
+func isPageValid(requiredPrecedingPages []int, updatePages []int, addedPages []int) bool {
 	// For each page that is required to precede
 	for _, precedingPage := range requiredPrecedingPages {
 		// If that page is in the update and the page is not added
@@ -133,7 +133,7 @@ updateValidationLoop:
 		for i, page := range updatePages {
 			pageDependencies := pageDependencyGraph[page]
 			slog.Debug("page validation loop", "page index", i, "page", page, "page dependencies", pageDependencies, "current added pages", addedPages)
-			if !isPageValid(page, pageDependencies, updatePages, addedPages) {
+			if !isPageValid(pageDependencies, updatePages, addedPages) {
 				continue updateValidationLoop
 			}
 			addedPages = append(addedPages, page)
@@ -187,7 +187,7 @@ func Part02(fileScanner *bufio.Scanner) (int, error) {
 			for i := 0; i < remainingPages.Length(); i += 1 {
 				page, _ := remainingPages.ItemAtIndex(i)
 				pageDependencies := pageDependencyGraph[page]
-				if isPageValid(page, pageDependencies, updatePages, addedPages) {
+				if isPageValid(pageDependencies, updatePages, addedPages) {
 					// We can add this page, do it
 					addedPages = append(addedPages, page)
 					remainingPages.RemoveAtIndex(i)
