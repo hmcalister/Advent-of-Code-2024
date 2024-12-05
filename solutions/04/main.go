@@ -74,83 +74,75 @@ func findTargetWords(byteArray [][]byte, rowStartIndex, colStartIndex int) int {
 	totalFound := 0
 
 	// Row Forward
-	if colStartIndex+bufferRequired < numCols {
-		if byteArray[rowStartIndex][colStartIndex+1] == TARGET_WORD_BYTES[1] &&
-			byteArray[rowStartIndex][colStartIndex+2] == TARGET_WORD_BYTES[2] &&
-			byteArray[rowStartIndex][colStartIndex+3] == TARGET_WORD_BYTES[3] {
-			slog.Debug("found target word", "rowStartIndex", rowStartIndex, "colStartIndex", colStartIndex, "direction", "Row Forward")
-			totalFound += 1
-		}
+	if colStartIndex+bufferRequired < numCols &&
+		byteArray[rowStartIndex][colStartIndex+1] == TARGET_WORD_BYTES[1] &&
+		byteArray[rowStartIndex][colStartIndex+2] == TARGET_WORD_BYTES[2] &&
+		byteArray[rowStartIndex][colStartIndex+3] == TARGET_WORD_BYTES[3] {
+		slog.Debug("found target word", "rowStartIndex", rowStartIndex, "colStartIndex", colStartIndex, "direction", "Row Forward")
+		totalFound += 1
 	}
 
 	// Row Backward
-	if colStartIndex-bufferRequired >= 0 {
-		if byteArray[rowStartIndex][colStartIndex-1] == TARGET_WORD_BYTES[1] &&
-			byteArray[rowStartIndex][colStartIndex-2] == TARGET_WORD_BYTES[2] &&
-			byteArray[rowStartIndex][colStartIndex-3] == TARGET_WORD_BYTES[3] {
-			slog.Debug("found target word", "rowStartIndex", rowStartIndex, "colStartIndex", colStartIndex, "direction", "Row Backward")
-			totalFound += 1
-		}
+	if colStartIndex-bufferRequired >= 0 &&
+		byteArray[rowStartIndex][colStartIndex-1] == TARGET_WORD_BYTES[1] &&
+		byteArray[rowStartIndex][colStartIndex-2] == TARGET_WORD_BYTES[2] &&
+		byteArray[rowStartIndex][colStartIndex-3] == TARGET_WORD_BYTES[3] {
+		slog.Debug("found target word", "rowStartIndex", rowStartIndex, "colStartIndex", colStartIndex, "direction", "Row Backward")
+		totalFound += 1
 	}
 
 	// Col Forward
-	if rowStartIndex+bufferRequired < numRows {
-		if byteArray[rowStartIndex+1][colStartIndex] == TARGET_WORD_BYTES[1] &&
-			byteArray[rowStartIndex+2][colStartIndex] == TARGET_WORD_BYTES[2] &&
-			byteArray[rowStartIndex+3][colStartIndex] == TARGET_WORD_BYTES[3] {
-			slog.Debug("found target word", "rowStartIndex", rowStartIndex, "colStartIndex", colStartIndex, "direction", "Col Forward")
-			totalFound += 1
-		}
+	if rowStartIndex+bufferRequired < numRows &&
+		byteArray[rowStartIndex+1][colStartIndex] == TARGET_WORD_BYTES[1] &&
+		byteArray[rowStartIndex+2][colStartIndex] == TARGET_WORD_BYTES[2] &&
+		byteArray[rowStartIndex+3][colStartIndex] == TARGET_WORD_BYTES[3] {
+		slog.Debug("found target word", "rowStartIndex", rowStartIndex, "colStartIndex", colStartIndex, "direction", "Col Forward")
+		totalFound += 1
 	}
 
 	// Col Backward
-	if rowStartIndex-bufferRequired >= 0 {
-		if byteArray[rowStartIndex-1][colStartIndex] == TARGET_WORD_BYTES[1] &&
-			byteArray[rowStartIndex-2][colStartIndex] == TARGET_WORD_BYTES[2] &&
-			byteArray[rowStartIndex-3][colStartIndex] == TARGET_WORD_BYTES[3] {
-			slog.Debug("found target word", "rowStartIndex", rowStartIndex, "colStartIndex", colStartIndex, "direction", "Col Backward")
-			totalFound += 1
-		}
+	if rowStartIndex-bufferRequired >= 0 &&
+		byteArray[rowStartIndex-1][colStartIndex] == TARGET_WORD_BYTES[1] &&
+		byteArray[rowStartIndex-2][colStartIndex] == TARGET_WORD_BYTES[2] &&
+		byteArray[rowStartIndex-3][colStartIndex] == TARGET_WORD_BYTES[3] {
+		slog.Debug("found target word", "rowStartIndex", rowStartIndex, "colStartIndex", colStartIndex, "direction", "Col Backward")
+		totalFound += 1
 	}
 
 	// Diagonal Down Right
-	if (colStartIndex+bufferRequired < numCols) && (rowStartIndex+bufferRequired < numRows) {
-		if byteArray[rowStartIndex+1][colStartIndex+1] == TARGET_WORD_BYTES[1] &&
-			byteArray[rowStartIndex+2][colStartIndex+2] == TARGET_WORD_BYTES[2] &&
-			byteArray[rowStartIndex+3][colStartIndex+3] == TARGET_WORD_BYTES[3] {
-			slog.Debug("found target word", "rowStartIndex", rowStartIndex, "colStartIndex", colStartIndex, "direction", "Diagonal Down Right")
-			totalFound += 1
-		}
+	if (colStartIndex+bufferRequired < numCols) && (rowStartIndex+bufferRequired < numRows) &&
+		byteArray[rowStartIndex+1][colStartIndex+1] == TARGET_WORD_BYTES[1] &&
+		byteArray[rowStartIndex+2][colStartIndex+2] == TARGET_WORD_BYTES[2] &&
+		byteArray[rowStartIndex+3][colStartIndex+3] == TARGET_WORD_BYTES[3] {
+		slog.Debug("found target word", "rowStartIndex", rowStartIndex, "colStartIndex", colStartIndex, "direction", "Diagonal Down Right")
+		totalFound += 1
 	}
 
 	// Diagonal Up Right
-	if (colStartIndex+bufferRequired < numCols) && (rowStartIndex-bufferRequired >= 0) {
-		if byteArray[rowStartIndex-1][colStartIndex+1] == TARGET_WORD_BYTES[1] &&
-			byteArray[rowStartIndex-2][colStartIndex+2] == TARGET_WORD_BYTES[2] &&
-			byteArray[rowStartIndex-3][colStartIndex+3] == TARGET_WORD_BYTES[3] {
-			slog.Debug("found target word", "rowStartIndex", rowStartIndex, "colStartIndex", colStartIndex, "direction", "Diagonal Up Right")
-			totalFound += 1
-		}
+	if (colStartIndex+bufferRequired < numCols) && (rowStartIndex-bufferRequired >= 0) &&
+		byteArray[rowStartIndex-1][colStartIndex+1] == TARGET_WORD_BYTES[1] &&
+		byteArray[rowStartIndex-2][colStartIndex+2] == TARGET_WORD_BYTES[2] &&
+		byteArray[rowStartIndex-3][colStartIndex+3] == TARGET_WORD_BYTES[3] {
+		slog.Debug("found target word", "rowStartIndex", rowStartIndex, "colStartIndex", colStartIndex, "direction", "Diagonal Up Right")
+		totalFound += 1
 	}
 
 	// Diagonal Down Left
-	if (colStartIndex-bufferRequired >= 0) && (rowStartIndex+bufferRequired < numRows) {
-		if byteArray[rowStartIndex+1][colStartIndex-1] == TARGET_WORD_BYTES[1] &&
-			byteArray[rowStartIndex+2][colStartIndex-2] == TARGET_WORD_BYTES[2] &&
-			byteArray[rowStartIndex+3][colStartIndex-3] == TARGET_WORD_BYTES[3] {
-			slog.Debug("found target word", "rowStartIndex", rowStartIndex, "colStartIndex", colStartIndex, "direction", "Diagonal Down Left")
-			totalFound += 1
-		}
+	if (colStartIndex-bufferRequired >= 0) && (rowStartIndex+bufferRequired < numRows) &&
+		byteArray[rowStartIndex+1][colStartIndex-1] == TARGET_WORD_BYTES[1] &&
+		byteArray[rowStartIndex+2][colStartIndex-2] == TARGET_WORD_BYTES[2] &&
+		byteArray[rowStartIndex+3][colStartIndex-3] == TARGET_WORD_BYTES[3] {
+		slog.Debug("found target word", "rowStartIndex", rowStartIndex, "colStartIndex", colStartIndex, "direction", "Diagonal Down Left")
+		totalFound += 1
 	}
 
 	// Diagonal Up Left
-	if (colStartIndex-bufferRequired >= 0) && (rowStartIndex-bufferRequired >= 0) {
-		if byteArray[rowStartIndex-1][colStartIndex-1] == TARGET_WORD_BYTES[1] &&
-			byteArray[rowStartIndex-2][colStartIndex-2] == TARGET_WORD_BYTES[2] &&
-			byteArray[rowStartIndex-3][colStartIndex-3] == TARGET_WORD_BYTES[3] {
-			slog.Debug("found target word", "rowStartIndex", rowStartIndex, "colStartIndex", colStartIndex, "direction", "Diagonal Up Left")
-			totalFound += 1
-		}
+	if (colStartIndex-bufferRequired >= 0) && (rowStartIndex-bufferRequired >= 0) &&
+		byteArray[rowStartIndex-1][colStartIndex-1] == TARGET_WORD_BYTES[1] &&
+		byteArray[rowStartIndex-2][colStartIndex-2] == TARGET_WORD_BYTES[2] &&
+		byteArray[rowStartIndex-3][colStartIndex-3] == TARGET_WORD_BYTES[3] {
+		slog.Debug("found target word", "rowStartIndex", rowStartIndex, "colStartIndex", colStartIndex, "direction", "Diagonal Up Left")
+		totalFound += 1
 	}
 
 	return totalFound
