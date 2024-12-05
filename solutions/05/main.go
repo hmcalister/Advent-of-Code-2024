@@ -165,6 +165,7 @@ func Part02(fileScanner *bufio.Scanner) (int, error) {
 
 	middleNumbersSum := 0
 
+updateLoop:
 	for fileScanner.Scan() {
 		updateLineString := strings.Split(fileScanner.Text(), ",")
 
@@ -198,9 +199,14 @@ func Part02(fileScanner *bufio.Scanner) (int, error) {
 					continue addPagesLoop
 				}
 			}
+
+			// If we have made it here, we have exhausted all options from the
+			// pages to add and hence the update cannot be fixed
+			slog.Debug("bad update cannot be fixed", "update pages", updatePages)
+			continue updateLoop
 		}
 
-		if !slices.Equal(updatePages, addedPages) {
+		if slices.Equal(updatePages, addedPages) {
 			slog.Debug("bad update found (and fixed)", "fixed update list", addedPages)
 			middleNumbersSum += addedPages[len(addedPages)/2]
 		} else {
