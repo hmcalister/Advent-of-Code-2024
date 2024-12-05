@@ -103,7 +103,48 @@ func isPageValid(page int, requiredPrecedingPages []int, updatePages []int, adde
 }
 
 func Part01(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	dependencies := make([]string, 0)
+	for fileScanner.Scan() {
+		line := fileScanner.Text()
+		if len(line) == 0 {
+			break
+		}
+		dependencies = append(dependencies, line)
+	}
+	pageDependencyGraph := parsePageDependencyGraph(dependencies)
+	slog.Debug("page dependency graph parsed", "dependency graph", pageDependencyGraph)
+
+	middleNumbersSum := 0
+
+updateValidationLoop:
+	for fileScanner.Scan() {
+		updateLineString := strings.Split(fileScanner.Text(), ",")
+
+		// Pages involved in the update
+		updatePages := parseUpdateLine(updateLineString)
+
+		// Pages added to the update so far
+		addedPages := make([]int, 0)
+		slog.Debug("parsed update", "included pages", updatePages)
+
+		// Walk over each page involved in the update in turn and ensure all dependencies are met
+		// if not, the update is invalid, so move to the next line
+		// if so, add page to the added pages list and continue to the next page
+		for i, page := range updatePages {
+			pageDependencies := pageDependencyGraph[page]
+			slog.Debug("page validation loop", "page index", i, "page", page, "page dependencies", pageDependencies, "current added pages", addedPages)
+			if !isPageValid(page, pageDependencies, updatePages, addedPages) {
+				continue updateValidationLoop
+			}
+			addedPages = append(addedPages, page)
+		}
+
+		// All pages good, add middle number
+		middleNumbersSum += addedPages[len(addedPages)/2]
+		slog.Debug("good update found", "update list", updatePages, "new middle sum", middleNumbersSum)
+	}
+
+	return middleNumbersSum, nil
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
