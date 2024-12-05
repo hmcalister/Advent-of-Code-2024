@@ -91,6 +91,17 @@ func parseUpdateLine(updateLine []string) []int {
 	return updatePagesList
 }
 
+func isPageValid(page int, requiredPrecedingPages []int, updatePages []int, addedPages []int) bool {
+	// For each page that is required to precede
+	for _, precedingPage := range requiredPrecedingPages {
+		// If that page is in the update and the page is not added
+		if slices.Contains(updatePages, precedingPage) && !slices.Contains(addedPages, precedingPage) {
+			return false
+		}
+	}
+	return true
+}
+
 func Part01(fileScanner *bufio.Scanner) (int, error) {
 	return 0, nil
 }
