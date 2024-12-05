@@ -55,6 +55,34 @@ func main() {
 	slog.Info("computation completed", "result", result, "computation time elapsed (ns)", computationEndTime.Sub(computationStartTime).Nanoseconds())
 }
 
+// Defines a dependency graph --- key page depends on all pages in the value list and must occur *after* these\
+func parsePageDependencyGraph(pageDependencies []string) map[int][]int {
+	dependencyGraph := make(map[int][]int)
+	for _, dependency := range pageDependencies {
+		line := strings.TrimSpace(dependency)
+
+		dependencyPages := strings.Split(line, "|")
+		if len(dependencyPages) != 2 {
+			slog.Error("found dependency line that is not of form 'a|b'", "offending line", dependency)
+			continue
+		}
+		beforePage, err1 := strconv.Atoi(dependencyPages[0])
+		afterPage, err2 := strconv.Atoi(dependencyPages[1])
+		if errors.Join(err1, err2) != nil {
+			slog.Error("found dependency line that is not of form '[int]|[int]'", "offending line", dependency)
+		}
+
+		// If afterPage is not already in the dependency graph, add a new list
+		if _, ok := dependencyGraph[afterPage]; !ok {
+			dependencyGraph[afterPage] = make([]int, 0)
+		}
+		dependencyGraph[afterPage] = append(dependencyGraph[afterPage], beforePage)
+		slog.Debug("parsed dependency", "line", line, "updated dependency list", dependencyGraph[afterPage])
+	}
+
+	return dependencyGraph
+}
+
 func Part01(fileScanner *bufio.Scanner) (int, error) {
 	return 0, nil
 }
