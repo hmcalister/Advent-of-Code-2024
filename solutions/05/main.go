@@ -206,7 +206,7 @@ updateLoop:
 			continue updateLoop
 		}
 
-		if slices.Equal(updatePages, addedPages) {
+		if !slices.Equal(updatePages, addedPages) {
 			middleNumbersSum += addedPages[len(addedPages)/2]
 			slog.Debug("bad update found (and fixed)", "fixed update list", addedPages, "updated middle sum", middleNumbersSum)
 		} else {
