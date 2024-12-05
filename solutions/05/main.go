@@ -83,6 +83,14 @@ func parsePageDependencyGraph(pageDependencies []string) map[int][]int {
 	return dependencyGraph
 }
 
+func parseUpdateLine(updateLine []string) []int {
+	updatePagesList := make([]int, len(updateLine))
+	for i := 0; i < len(updateLine); i += 1 {
+		updatePagesList[i], _ = strconv.Atoi(updateLine[i])
+	}
+	return updatePagesList
+}
+
 func Part01(fileScanner *bufio.Scanner) (int, error) {
 	return 0, nil
 }
