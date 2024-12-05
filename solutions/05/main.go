@@ -91,9 +91,13 @@ func parseUpdateLine(updateLine []string) []int {
 	return updatePagesList
 }
 
-func isPageValid(requiredPrecedingPages []int, updatePages []int, addedPages []int) bool {
+// Given a page's dependencies,
+// the pages involved in this update (to filter out dependencies that do not matter),
+// and the pages added to the output thus far,
+// determine if the proposed page can be added to the list
+func isPageValid(pageDependencies []int, updatePages []int, addedPages []int) bool {
 	// For each page that is required to precede
-	for _, precedingPage := range requiredPrecedingPages {
+	for _, precedingPage := range pageDependencies {
 		// If that page is in the update and the page is not added
 		if slices.Contains(updatePages, precedingPage) && !slices.Contains(addedPages, precedingPage) {
 			return false
