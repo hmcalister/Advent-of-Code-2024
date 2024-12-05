@@ -148,5 +148,62 @@ updateValidationLoop:
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	dependencies := make([]string, 0)
+	for fileScanner.Scan() {
+		line := fileScanner.Text()
+		if len(line) == 0 {
+			break
+		}
+		dependencies = append(dependencies, line)
+	}
+	pageDependencyGraph := parsePageDependencyGraph(dependencies)
+	slog.Debug("page dependency graph parsed", "dependency graph", pageDependencyGraph)
+
+	middleNumbersSum := 0
+
+	for fileScanner.Scan() {
+		updateLineString := strings.Split(fileScanner.Text(), ",")
+
+		// Pages involved in the update
+		updatePages := parseUpdateLine(updateLineString)
+
+		// The pages that are yet to be added, separate from updatePages
+		// as this variable will be spliced out until it is eventually empty
+		//
+		// We use a linked list to easily remove items later
+		// without having to reallocate potentially large arrays
+		remainingPages := linkedlist.New[int]()
+		for _, page := range updatePages {
+			remainingPages.Add(page)
+		}
+
+		// Pages added to the update so far
+		addedPages := make([]int, 0)
+
+		// Try to add each number in turn, if that number can be added, do it and splice it out of the list
+	addPagesLoop:
+		for remainingPages.Length() > 0 {
+			slog.Debug("add pages loop", "current added pages", addedPages, "remaining pages", remainingPages.Length())
+			for i := 0; i < remainingPages.Length(); i += 1 {
+				page, _ := remainingPages.ItemAtIndex(i)
+				pageDependencies := pageDependencyGraph[page]
+				if isPageValid(page, pageDependencies, updatePages, addedPages) {
+					// We can add this page, do it
+					addedPages = append(addedPages, page)
+					remainingPages.RemoveAtIndex(i)
+					continue addPagesLoop
+				}
+			}
+		}
+
+		if !slices.Equal(updatePages, addedPages) {
+			slog.Debug("bad update found (and fixed)", "fixed update list", addedPages)
+			middleNumbersSum += addedPages[len(addedPages)/2]
+		} else {
+			slog.Debug("update already good", "update list", addedPages)
+		}
+
+	}
+
+	return middleNumbersSum, nil
 }
