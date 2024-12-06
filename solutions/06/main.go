@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"flag"
 	"log/slog"
 	"os"
@@ -58,10 +59,19 @@ func main() {
 	slog.Info("computation completed", "result", result, "computation time elapsed (ns)", computationEndTime.Sub(computationStartTime).Nanoseconds())
 }
 
+type MapData struct {
+	Width       int
+	Height      int
+	ObstacleMap map[Coordinate]interface{}
+}
+
 // returns the width, height of the grid, a map of coordinates to obstacles, the guard position and the guard direction
-func parseInput(inputLines []string) (int, int, map[Coordinate]interface{}, Coordinate, Direction) {
-	guardCoordinate := Coordinate{-1, 1}
-	guardDirection := DIRECTION_UP
+func parseInput(inputLines []string) (MapData, GuardState) {
+	guardState := GuardState{
+		Coordinate: Coordinate{-1, -1},
+		Direction:  DIRECTION_UP,
+	}
+
 	obstacleMap := make(map[Coordinate]interface{})
 	for y, line := range inputLines {
 		slog.Debug("read line", "line", line)
@@ -73,34 +83,34 @@ func parseInput(inputLines []string) (int, int, map[Coordinate]interface{}, Coor
 				obstacleMap[c] = struct{}{}
 			case GUARD_UP_RUNE:
 				slog.Debug("found guard up", "coordinate", c)
-				guardCoordinate = c
-				guardDirection = DIRECTION_UP
+				guardState.Coordinate = c
+				guardState.Direction = DIRECTION_UP
 			case GUARD_RIGHT_RUNE:
 				slog.Debug("found guard right", "coordinate", c)
-				guardCoordinate = c
-				guardDirection = DIRECTION_RIGHT
+				guardState.Coordinate = c
+				guardState.Direction = DIRECTION_RIGHT
 			case GUARD_DOWN_RUNE:
 				slog.Debug("found guard down", "coordinate", c)
-				guardCoordinate = c
-				guardDirection = DIRECTION_DOWN
+				guardState.Coordinate = c
+				guardState.Direction = DIRECTION_DOWN
 			case GUARD_LEFT_RUNE:
 				slog.Debug("found guard left", "coordinate", c)
-				guardCoordinate = c
-				guardDirection = DIRECTION_LEFT
+				guardState.Coordinate = c
+				guardState.Direction = DIRECTION_LEFT
 			case EMPTY_RUNE:
 				// slog.Debug("empty coordinate")
 			default:
-				slog.Error("unexpected rune found", "rune", repRune)
+				slog.Error("unexpected rune found", "rune", repRune, "location x", x, "location y", y)
 			}
 		}
 	}
 
-	if guardCoordinate.X == -1 && guardCoordinate.Y == -1 {
+	if guardState.Coordinate.X == -1 && guardState.Coordinate.Y == -1 {
 		slog.Error("no guard found")
 		os.Exit(1)
 	}
 
-	return len(inputLines[0]), len(inputLines), obstacleMap, guardCoordinate, guardDirection
+	return MapData{len(inputLines[0]), len(inputLines), obstacleMap}, guardState
 }
 
 func Part01(fileScanner *bufio.Scanner) (int, error) {
