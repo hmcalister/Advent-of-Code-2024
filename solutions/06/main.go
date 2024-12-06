@@ -146,27 +146,16 @@ func Part01(fileScanner *bufio.Scanner) (int, error) {
 	for fileScanner.Scan() {
 		inputLines = append(inputLines, fileScanner.Text())
 	}
-	mapWidth, mapHeight, obstacleMap, guardCoordinate, guardDirection := parseInput(inputLines)
-	slog.Debug("parsed input", "mapWidth", mapWidth, "mapHeight", mapHeight, "obstacleMap", obstacleMap, "guardCoordinate", guardCoordinate, "guardDirection", guardDirection)
+	mapData, guardState := parseInput(inputLines)
+	slog.Debug("parsed input", "mapWidth", mapData.Width, "mapHeight", mapData.Height, "obstacleMap", mapData.ObstacleMap, "guardState", guardState)
 
-	visitedCells := make(map[Coordinate]interface{})
-	for guardCoordinate.X >= 0 &&
-		guardCoordinate.X < mapWidth &&
-		guardCoordinate.Y >= 0 &&
-		guardCoordinate.Y < mapHeight {
-		visitedCells[guardCoordinate] = struct{}{}
-		nextCoordinate := guardCoordinate.Step(guardDirection)
-		if _, ok := obstacleMap[nextCoordinate]; ok {
-			slog.Debug("found obstacle", "current coordinate", guardCoordinate, "direction", guardDirection)
-			guardDirection = guardDirection.RotateRight()
-			continue
-		}
-
-		slog.Debug("making step", "current coordinate", guardCoordinate, "direction", guardDirection)
-		guardCoordinate = guardCoordinate.Step(guardDirection)
+	numVisitedCells, err := mapData.CheckVisitedCells(guardState)
+	if err != nil {
+		slog.Error("error occurred when checking path", "error", err)
+		os.Exit(1)
 	}
 
-	return len(visitedCells), nil
+	return numVisitedCells, nil
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
