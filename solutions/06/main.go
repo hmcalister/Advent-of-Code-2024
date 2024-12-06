@@ -7,6 +7,8 @@ import (
 	"log/slog"
 	"os"
 	"time"
+
+	hashset "github.com/hmcalister/Go-DSA/set/HashSet"
 )
 
 const (
@@ -62,7 +64,7 @@ func main() {
 type MapData struct {
 	Width       int
 	Height      int
-	ObstacleMap map[Coordinate]interface{}
+	ObstacleMap *hashset.HashSet[Coordinate]
 }
 
 // returns the width, height of the grid, a map of coordinates to obstacles, the guard position and the guard direction
@@ -72,7 +74,7 @@ func parseInput(inputLines []string) (MapData, GuardState) {
 		Direction:  DIRECTION_UP,
 	}
 
-	obstacleMap := make(map[Coordinate]interface{})
+	obstacleMap := hashset.New[Coordinate]()
 	for y, line := range inputLines {
 		slog.Debug("read line", "line", line)
 		for x, repRune := range line {
@@ -80,7 +82,7 @@ func parseInput(inputLines []string) (MapData, GuardState) {
 			switch repRune {
 			case OBSTACLE_RUNE:
 				slog.Debug("found obstacle", "coordinate", c)
-				obstacleMap[c] = struct{}{}
+				obstacleMap.Add(c)
 			case GUARD_UP_RUNE:
 				slog.Debug("found guard up", "coordinate", c)
 				guardState.Coordinate = c
@@ -116,19 +118,19 @@ func parseInput(inputLines []string) (MapData, GuardState) {
 // Count the number of visited cells (not states, direction is irrelevant) in path set by the initial guard state
 // If the path loops at any point, an error is returned
 func (m MapData) CheckVisitedCells(guardState GuardState) (int, error) {
-	visitedCells := make(map[Coordinate]interface{})
-	visitedStates := make(map[GuardState]interface{})
+	visitedCellsSet := hashset.New[Coordinate]()
+	visitedStatesSet := hashset.New[GuardState]()
 
 	for guardState.InBounds(m.Width, m.Height) {
-		if _, ok := visitedStates[guardState]; ok {
+		if visitedStatesSet.Contains(guardState) {
 			// We have seen this state before, therefore we are in a loop
 			return -1, errors.New("a loop has occurred in the path")
 		}
-		visitedStates[guardState] = struct{}{}
-		visitedCells[guardState.Coordinate] = struct{}{}
+		visitedStatesSet.Add(guardState)
+		visitedCellsSet.Add(guardState.Coordinate)
 
 		nextState := guardState.Step()
-		if _, ok := m.ObstacleMap[nextState.Coordinate]; ok {
+		if m.ObstacleMap.Contains(nextState.Coordinate) {
 			// slog.Debug("found obstacle", "current state", guardState, "numVisitedCells", len(visitedCells))
 			guardState = guardState.EncounterObstacle()
 			continue
@@ -138,7 +140,7 @@ func (m MapData) CheckVisitedCells(guardState GuardState) (int, error) {
 		guardState = nextState
 	}
 
-	return len(visitedCells), nil
+	return visitedCellsSet.Size(), nil
 }
 
 func Part01(fileScanner *bufio.Scanner) (int, error) {
@@ -166,17 +168,16 @@ func Part02(fileScanner *bufio.Scanner) (int, error) {
 	mapData, guardState := parseInput(inputLines)
 	slog.Debug("parsed input", "mapWidth", mapData.Width, "mapHeight", mapData.Height, "obstacleMap", mapData.ObstacleMap, "guardState", guardState)
 
-	visitedStatesMap := make(map[Coordinate]interface{})
-	loopCreatingObstacleMap := make(map[Coordinate]interface{})
-	totalLoopCreatingObstacles := 0
+	visitedStatesSet := hashset.New[Coordinate]()
+	loopCreatingObstacleSet := hashset.New[Coordinate]()
 
 	// Walk over the path and at each step (that does not already have an obstacle in front of it)
 	// see if adding an obstacle introduces a loop. If so, count it. Otherwise, remove the obstacle and take a step.
 	for currentPathStep := 0; guardState.InBounds(mapData.Width, mapData.Height); currentPathStep += 1 {
-		visitedStatesMap[guardState.Coordinate] = struct{}{}
+		visitedStatesSet.Add(guardState.Coordinate)
 
 		nextState := guardState.Step()
-		if _, ok := mapData.ObstacleMap[nextState.Coordinate]; ok {
+		if mapData.ObstacleMap.Contains(nextState.Coordinate) {
 			slog.Debug("found existing obstacle", "current state", guardState)
 			guardState = guardState.EncounterObstacle()
 			currentPathStep -= 1
@@ -184,26 +185,20 @@ func Part02(fileScanner *bufio.Scanner) (int, error) {
 		}
 
 		// Only add an obstacle if the next state is in bounds and the coordinate has not been visited already (blocking the previous path...)
-		if _, ok := visitedStatesMap[nextState.Coordinate]; !ok && nextState.InBounds(mapData.Width, mapData.Height) {
+		if !visitedStatesSet.Contains(nextState.Coordinate) && nextState.InBounds(mapData.Width, mapData.Height) {
 			slog.Debug("try path with obstacle inserted", "current state", guardState)
-			mapData.ObstacleMap[nextState.Coordinate] = struct{}{}
+			mapData.ObstacleMap.Add(nextState.Coordinate)
 			_, err := mapData.CheckVisitedCells(guardState)
 			if err != nil {
 				slog.Debug("loop encountered with obstacle", "obstacle coordinate", nextState.Coordinate)
-				if _, ok := loopCreatingObstacleMap[nextState.Coordinate]; ok {
-					slog.Info("state already present?")
-				}
-				loopCreatingObstacleMap[nextState.Coordinate] = struct{}{}
-				totalLoopCreatingObstacles += 1
+				loopCreatingObstacleSet.Add(nextState.Coordinate)
 			}
-			delete(mapData.ObstacleMap, nextState.Coordinate)
+			mapData.ObstacleMap.Remove(nextState.Coordinate)
 		}
 
 		slog.Debug("making step", "current state", guardState, "currentPathStep", currentPathStep)
 		guardState = nextState
 	}
 
-	slog.Info("part 02 finish", "len map", len(loopCreatingObstacleMap), "total", totalLoopCreatingObstacles)
-
-	return len(loopCreatingObstacleMap), nil
+	return loopCreatingObstacleSet.Size(), nil
 }
