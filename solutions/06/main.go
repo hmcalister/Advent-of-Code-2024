@@ -113,6 +113,34 @@ func parseInput(inputLines []string) (MapData, GuardState) {
 	return MapData{len(inputLines[0]), len(inputLines), obstacleMap}, guardState
 }
 
+// Count the number of visited cells (not states, direction is irrelevant) in path set by the initial guard state
+// If the path loops at any point, an error is returned
+func (m MapData) CheckVisitedCells(guardState GuardState) (int, error) {
+	visitedCells := make(map[Coordinate]interface{})
+	visitedStates := make(map[GuardState]interface{})
+
+	for guardState.InBounds(m.Width, m.Height) {
+		if _, ok := visitedStates[guardState]; ok {
+			// We have seen this state before, therefore we are in a loop
+			return -1, errors.New("a loop has occurred in the path")
+		}
+		visitedStates[guardState] = struct{}{}
+		visitedCells[guardState.Coordinate] = struct{}{}
+
+		nextState := guardState.Step()
+		if _, ok := m.ObstacleMap[nextState.Coordinate]; ok {
+			// slog.Debug("found obstacle", "current state", guardState, "numVisitedCells", len(visitedCells))
+			guardState = guardState.EncounterObstacle()
+			continue
+		}
+
+		// slog.Debug("making step", "current state", guardState, "numVisitedCells", len(visitedCells))
+		guardState = nextState
+	}
+
+	return len(visitedCells), nil
+}
+
 func Part01(fileScanner *bufio.Scanner) (int, error) {
 	inputLines := make([]string, 0)
 	for fileScanner.Scan() {
