@@ -68,5 +68,19 @@ func Part01(fileScanner *bufio.Scanner) (int, error) {
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	totalCalibrationResult := 0
+	for fileScanner.Scan() {
+		line := fileScanner.Text()
+		calibrationData, err := ParseLineToCalibrationData(line)
+		if err != nil {
+			slog.Error("found error when parsing line", "line", line, "error", err)
+			continue
+		}
+
+		if calibrationData.IsValidPart02() {
+			totalCalibrationResult += calibrationData.TargetNumber
+			slog.Debug("found valid calibration data", "calibration data", calibrationData, "updated total", totalCalibrationResult)
+		}
+	}
+	return totalCalibrationResult, nil
 }
