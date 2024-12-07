@@ -93,6 +93,10 @@ func (c *CalibrationData) isValidPart02Recursive(currentValue int, currentIndex 
 }
 
 func concatIntegers(a, b int) int {
+	// bLen := 1
+	// if b > 0 {
+	// 	bLen = int(math.Log10(float64(b))) + 1
+	// }
 	bLen := len(strconv.FormatInt(int64(b), 10))
 	concatValue := int(math.Pow10(bLen))*a + b
 	return concatValue
