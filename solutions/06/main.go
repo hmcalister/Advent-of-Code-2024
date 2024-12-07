@@ -173,14 +173,13 @@ func Part02(fileScanner *bufio.Scanner) (int, error) {
 
 	// Walk over the path and at each step (that does not already have an obstacle in front of it)
 	// see if adding an obstacle introduces a loop. If so, count it. Otherwise, remove the obstacle and take a step.
-	for currentPathStep := 0; guardState.InBounds(mapData.Width, mapData.Height); currentPathStep += 1 {
+	for guardState.InBounds(mapData.Width, mapData.Height) {
 		visitedStatesSet.Add(guardState.Coordinate)
 
 		nextState := guardState.Step()
 		if mapData.ObstacleMap.Contains(nextState.Coordinate) {
 			slog.Debug("found existing obstacle", "current state", guardState)
 			guardState = guardState.EncounterObstacle()
-			currentPathStep -= 1
 			continue
 		}
 
@@ -196,7 +195,7 @@ func Part02(fileScanner *bufio.Scanner) (int, error) {
 			mapData.ObstacleMap.Remove(nextState.Coordinate)
 		}
 
-		slog.Debug("making step", "current state", guardState, "currentPathStep", currentPathStep)
+		slog.Debug("making step", "current state", guardState)
 		guardState = nextState
 	}
 
