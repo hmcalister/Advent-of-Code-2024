@@ -17,6 +17,10 @@ type CalibrationData struct {
 	EquationData []int
 }
 
+// Line is expected to be of the form "(targetNumber): (equationData[0]) (equationData[1]) (equationData[2]) ..."
+// where each group is an integer, e.g.
+//
+// 10: 2 4 8 16
 func ParseLineToCalibrationData(line string) (*CalibrationData, error) {
 	lineParts := strings.Split(line, ":")
 	if len(lineParts) != 2 {
