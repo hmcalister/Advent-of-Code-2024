@@ -5,6 +5,7 @@ import (
 	"flag"
 	"log/slog"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -50,7 +51,10 @@ func main() {
 }
 
 func Part01(fileScanner *bufio.Scanner) (int, error) {
+	var totalMutex sync.Mutex
+	var workerWaitGroup sync.WaitGroup
 	totalCalibrationResult := 0
+
 	for fileScanner.Scan() {
 		line := fileScanner.Text()
 		calibrationData, err := ParseLineToCalibrationData(line)
@@ -59,16 +63,26 @@ func Part01(fileScanner *bufio.Scanner) (int, error) {
 			continue
 		}
 
-		if calibrationData.IsValidPart01() {
-			totalCalibrationResult += calibrationData.TargetNumber
-			slog.Debug("found valid calibration data", "calibration data", calibrationData, "updated total", totalCalibrationResult)
-		}
+		workerWaitGroup.Add(1)
+		go func() {
+			defer workerWaitGroup.Done()
+			if calibrationData.IsValidPart01() {
+				totalMutex.Lock()
+				totalCalibrationResult += calibrationData.TargetNumber
+				slog.Debug("found valid calibration data", "calibration data", calibrationData, "updated total", totalCalibrationResult)
+				totalMutex.Unlock()
+			}
+		}()
 	}
+	workerWaitGroup.Wait()
 	return totalCalibrationResult, nil
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
+	var totalMutex sync.Mutex
+	var workerWaitGroup sync.WaitGroup
 	totalCalibrationResult := 0
+
 	for fileScanner.Scan() {
 		line := fileScanner.Text()
 		calibrationData, err := ParseLineToCalibrationData(line)
@@ -77,10 +91,17 @@ func Part02(fileScanner *bufio.Scanner) (int, error) {
 			continue
 		}
 
-		if calibrationData.IsValidPart02() {
-			totalCalibrationResult += calibrationData.TargetNumber
-			slog.Debug("found valid calibration data", "calibration data", calibrationData, "updated total", totalCalibrationResult)
-		}
+		workerWaitGroup.Add(1)
+		go func() {
+			defer workerWaitGroup.Done()
+			if calibrationData.IsValidPart02() {
+				totalMutex.Lock()
+				totalCalibrationResult += calibrationData.TargetNumber
+				slog.Debug("found valid calibration data", "calibration data", calibrationData, "updated total", totalCalibrationResult)
+				totalMutex.Unlock()
+			}
+		}()
 	}
+	workerWaitGroup.Wait()
 	return totalCalibrationResult, nil
 }
