@@ -71,3 +71,29 @@ func (c *CalibrationData) isValidPart01Recursive(currentValue int, currentIndex 
 		c.isValidPart01Recursive(currentValue*currentEquationData, currentIndex+1)
 }
 
+func (c *CalibrationData) IsValidPart02() bool {
+	return c.isValidPart02Recursive(0, 0)
+}
+
+func (c *CalibrationData) isValidPart02Recursive(currentValue int, currentIndex int) bool {
+	// If we are at the end, then evaluate that current value is exactly equal to the target
+	if currentIndex == len(c.EquationData) {
+		return currentValue == c.TargetNumber
+	}
+
+	// Since addition, multiplication, and concatenation are monotonically increasing, the current value can never decrease
+	if currentValue > c.TargetNumber {
+		return false
+	}
+
+	currentEquationData := c.EquationData[currentIndex]
+	return c.isValidPart02Recursive(currentValue+currentEquationData, currentIndex+1) ||
+		c.isValidPart02Recursive(currentValue*currentEquationData, currentIndex+1) ||
+		c.isValidPart02Recursive(concatIntegers(currentValue, currentEquationData), currentIndex+1)
+}
+
+func concatIntegers(a, b int) int {
+	bLen := len(strconv.FormatInt(int64(b), 10))
+	concatValue := int(math.Pow10(bLen))*a + b
+	return concatValue
+}
