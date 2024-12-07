@@ -51,3 +51,23 @@ func ParseLineToCalibrationData(line string) (*CalibrationData, error) {
 	}, nil
 }
 
+func (c *CalibrationData) IsValidPart01() bool {
+	return c.isValidPart01Recursive(0, 0)
+}
+
+func (c *CalibrationData) isValidPart01Recursive(currentValue int, currentIndex int) bool {
+	// If we are at the end, then evaluate that current value is exactly equal to the target
+	if currentIndex == len(c.EquationData) {
+		return currentValue == c.TargetNumber
+	}
+
+	// Since part 01 is only concerned with addition and multiplication, the current value can never decrease
+	if currentValue > c.TargetNumber {
+		return false
+	}
+
+	currentEquationData := c.EquationData[currentIndex]
+	return c.isValidPart01Recursive(currentValue+currentEquationData, currentIndex+1) ||
+		c.isValidPart01Recursive(currentValue*currentEquationData, currentIndex+1)
+}
+
