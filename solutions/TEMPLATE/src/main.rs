@@ -1,4 +1,5 @@
-use std::{fs::File, io::{BufRead, BufReader}};
+use std::fs::File;
+use std::io::{BufRead, BufReader};
 
 #[allow(unused_imports)]
 use tracing::{error, info, debug, trace};
@@ -42,7 +43,7 @@ fn part01(input_file_reader: BufReader<File>) -> Option<i64>{
         let line = line_result.unwrap();
         debug!("line"=line, "read line from input file");
     }
-    
+
     None
 }
 
