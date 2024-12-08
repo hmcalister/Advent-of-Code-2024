@@ -83,6 +83,7 @@ func (antennaMap *AntennaMap) CountAntinodesPart02() int {
 	return validAntinodes.Size()
 }
 
+// Count the first order antinodes of a given frequency, returning the valid (inbound) coordinates
 // This function does not mutate any attributes of the AntennaMap and is hence concurrency safe
 func (antennaMap *AntennaMap) countFirstOrderAntinodesOfFrequency(frequency rune) []Coordinate {
 	frequencyCoordinates, ok := antennaMap.antennaFrequencyLocations[frequency]
