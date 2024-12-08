@@ -46,10 +46,10 @@ func ParseInputToAntennaMap(fileScanner *bufio.Scanner) *AntennaMap {
 	return &antennaMap
 }
 
-func (antennaMap *AntennaMap) CountAntinodes() int {
+func (antennaMap *AntennaMap) CountAntinodesPart01() int {
 	validAntinodes := hashset.New[Coordinate]()
 	for frequency := range antennaMap.antennaFrequencyLocations {
-		frequencyAntinodes := antennaMap.countAntinodesOfFrequency(frequency)
+		frequencyAntinodes := antennaMap.countFirstOrderAntinodesOfFrequency(frequency)
 		slog.Debug("found antinodes of frequency", "frequency", frequency, "antinodes", frequencyAntinodes)
 		for _, antinode := range frequencyAntinodes {
 			validAntinodes.Add(antinode)
@@ -60,7 +60,7 @@ func (antennaMap *AntennaMap) CountAntinodes() int {
 
 // Count the antinodes of a given frequency, returning the valid (inbound) coordinates
 // This function does not mutate any attributes of the AntennaMap and is hence concurrency safe
-func (antennaMap *AntennaMap) countAntinodesOfFrequency(frequency rune) []Coordinate {
+func (antennaMap *AntennaMap) countFirstOrderAntinodesOfFrequency(frequency rune) []Coordinate {
 	frequencyCoordinates, ok := antennaMap.antennaFrequencyLocations[frequency]
 	validAntinodes := make([]Coordinate, 0)
 	if !ok {

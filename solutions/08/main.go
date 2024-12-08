@@ -51,7 +51,7 @@ func main() {
 
 func Part01(fileScanner *bufio.Scanner) (int, error) {
 	antennaMap := ParseInputToAntennaMap(fileScanner)
-	numAntinodes := antennaMap.CountAntinodes()
+	numAntinodes := antennaMap.CountAntinodesPart01()
 
 	return numAntinodes, nil
 }
