@@ -46,3 +46,15 @@ func ParseInputToAntennaMap(fileScanner *bufio.Scanner) *AntennaMap {
 	return &antennaMap
 }
 
+func (antennaMap *AntennaMap) CountAntinodes() int {
+	validAntinodes := hashset.New[Coordinate]()
+	for frequency := range antennaMap.antennaFrequencyLocations {
+		frequencyAntinodes := antennaMap.countAntinodesOfFrequency(frequency)
+		slog.Debug("found antinodes of frequency", "frequency", frequency, "antinodes", frequencyAntinodes)
+		for _, antinode := range frequencyAntinodes {
+			validAntinodes.Add(antinode)
+		}
+	}
+	return validAntinodes.Size()
+}
+
