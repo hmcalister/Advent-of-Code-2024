@@ -1,5 +1,7 @@
+use std::{fs::File, io::{BufRead, BufReader}};
+
 #[allow(unused_imports)]
-use tracing::{info, debug, error};
+use tracing::{error, info, debug, trace};
 use clap::Parser;
 
 
@@ -21,25 +23,34 @@ struct CommandLineArgs {
 fn main() {
     logging::set_logging();
     let args = CommandLineArgs::parse();
-    debug!("command line args" = ?args, "parsed command line args");
+    trace!("command line args" = ?args, "parsed command line args");
 
-    let result_option = match args.part {
-        1 => part01(),
-        2 => part02(),
+    let input_file_handle = File::open(args.input_file).expect("could not open input file");
+    let input_file_reader = BufReader::new(input_file_handle);
+
+    let computation_result = match args.part {
+        1 => part01(input_file_reader),
+        2 => part02(input_file_reader),
         _ => unreachable!() // clap has filtered out all other possibilities.
-    };
+    }.expect("computation did not produce a value");
 
-    match result_option {
-        Some(result_value) => info!("result_value"=result_value, "computation complete"),
-        None => error!("computation did not produce a value")
-    }
-
+    info!("computation_result"=computation_result, "computation complete");
 }
 
-fn part01() -> Option<i64>{
+fn part01(input_file_reader: BufReader<File>) -> Option<i64>{
+    for line_result in input_file_reader.lines() {
+        let line = line_result.unwrap();
+        debug!("line"=line, "read line from input file");
+    }
+    
     None
 }
 
-fn part02() -> Option<i64>{
+fn part02(input_file_reader: BufReader<File>) -> Option<i64>{
+    for line_result in input_file_reader.lines() {
+        let line = line_result.unwrap();
+        debug!("line"=line, "read line from input file");
+    }
+
     None
 }
