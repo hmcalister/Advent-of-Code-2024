@@ -42,3 +42,44 @@ fn main() {
     );
 }
 
+fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
+    let mut left_list = Vec::new();
+    let mut right_list = Vec::new();
+    for line_result in input_file_reader.lines() {
+        let line = line_result.unwrap();
+        let line_parts: Vec<_> = line.split_ascii_whitespace().collect();
+
+        debug!(
+            "line" = line,
+            "line parts" = format!("{:?}", line_parts),
+            "read line from input file"
+        );
+
+        let parsed_numbers: Vec<_> = line_parts
+            .iter()
+            .filter_map(|item| item.parse::<i64>().ok())
+            .collect();
+
+        if line_parts.len() != parsed_numbers.len() {
+            error!(
+                "line" = line,
+                "line parts" = format!("{:?}", line_parts),
+                "parsed numbers" = format!("{:?}", parsed_numbers),
+                "line failed to parse successfully to integer"
+            );
+            continue;
+        }
+
+        left_list.push(parsed_numbers[0]);
+        right_list.push(parsed_numbers[1]);
+    }
+
+    left_list.sort();
+    right_list.sort();
+
+    let total_difference = left_list.iter().zip(right_list.iter())
+        .map(|(a,b)| (a-b).abs())
+        .sum();
+    Some(total_difference)
+}
+
