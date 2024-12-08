@@ -83,3 +83,40 @@ fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
     Some(total_difference)
 }
 
+fn part02(input_file_reader: BufReader<File>) -> Option<i64> {
+    let mut left_list = Vec::new();
+    let mut right_list_count:HashMap<i64, i64> = HashMap::new();
+    for line_result in input_file_reader.lines() {
+        let line = line_result.unwrap();
+        let line_parts: Vec<_> = line.split_ascii_whitespace().collect();
+
+        debug!(
+            "line" = line,
+            "line parts" = format!("{:?}", line_parts),
+            "read line from input file"
+        );
+
+        let parsed_numbers: Vec<_> = line_parts
+            .iter()
+            .filter_map(|item| item.parse::<i64>().ok())
+            .collect();
+
+        if line_parts.len() != parsed_numbers.len() {
+            error!(
+                "line" = line,
+                "line parts" = format!("{:?}", line_parts),
+                "parsed numbers" = format!("{:?}", parsed_numbers),
+                "line failed to parse successfully to integer"
+            );
+            continue;
+        }
+
+        left_list.push(parsed_numbers[0]);
+        *right_list_count.entry(parsed_numbers[1]).or_default() += 1;
+    }
+
+    let score = left_list.iter()
+        .map(|item| right_list_count.get(&item).unwrap_or(&0) * item)
+        .sum();
+    Some(score)
+}
