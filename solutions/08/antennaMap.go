@@ -93,20 +93,18 @@ func (antennaMap *AntennaMap) countFirstOrderAntinodesOfFrequency(frequency rune
 		return validAntinodes
 	}
 
-	for c1 := 0; c1 < len(frequencyCoordinates); c1 += 1 {
-		for c2 := c1 + 1; c2 < len(frequencyCoordinates); c2 += 1 {
-			coord1 := frequencyCoordinates[c1]
-			coord2 := frequencyCoordinates[c2]
-			a1 := determineFirstOrderAntinode(coord1, coord2)
-			if a1.InBounds(antennaMap.width, antennaMap.height) {
-				// slog.Debug("found valid antinode", "frequency", frequency, "coord1", coord1, "coord2", coord2, "antinode", a1)
-				validAntinodes = append(validAntinodes, a1)
+	for coordOneIndex := 0; coordOneIndex < len(frequencyCoordinates); coordOneIndex += 1 {
+		coordOne := frequencyCoordinates[coordOneIndex]
+		for coordTwoIndex := coordOneIndex + 1; coordTwoIndex < len(frequencyCoordinates); coordTwoIndex += 1 {
+			coordTwo := frequencyCoordinates[coordTwoIndex]
+			antinodeOne := determineFirstOrderAntinode(coordOne, coordTwo)
+			if antinodeOne.InBounds(antennaMap.width, antennaMap.height) {
+				validAntinodes = append(validAntinodes, antinodeOne)
 			}
 
-			a2 := determineFirstOrderAntinode(frequencyCoordinates[c2], frequencyCoordinates[c1])
-			if a2.InBounds(antennaMap.width, antennaMap.height) {
-				// slog.Debug("found valid antinode", "frequency", frequency, "coord1", coord2, "coord2", coord1, "antinode", a2)
-				validAntinodes = append(validAntinodes, a2)
+			antinodeTwo := determineFirstOrderAntinode(frequencyCoordinates[coordTwoIndex], frequencyCoordinates[coordOneIndex])
+			if antinodeTwo.InBounds(antennaMap.width, antennaMap.height) {
+				validAntinodes = append(validAntinodes, antinodeTwo)
 			}
 		}
 	}
@@ -124,12 +122,12 @@ func (antennaMap *AntennaMap) countAllAntinodesOfFrequency(frequency rune) []Coo
 		return validAntinodes
 	}
 
-	for c1 := 0; c1 < len(frequencyCoordinates); c1 += 1 {
+	for coordOneIndex := 0; coordOneIndex < len(frequencyCoordinates); coordOneIndex += 1 {
 		// Don't forget the antinode at the current position, i.e. dx=dy=0
-		coordOne := frequencyCoordinates[c1]
+		coordOne := frequencyCoordinates[coordOneIndex]
 		validAntinodes = append(validAntinodes, coordOne)
-		for c2 := c1 + 1; c2 < len(frequencyCoordinates); c2 += 1 {
-			coordTwo := frequencyCoordinates[c2]
+		for coordTwoIndex := coordOneIndex + 1; coordTwoIndex < len(frequencyCoordinates); coordTwoIndex += 1 {
+			coordTwo := frequencyCoordinates[coordTwoIndex]
 
 			antinodeOneStep := coordOne.Subtract(coordTwo)
 			antinodeOne := coordOne.Add(antinodeOneStep)
