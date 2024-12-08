@@ -5,14 +5,30 @@ import (
 	"flag"
 	"log/slog"
 	"os"
+	"runtime/pprof"
 	"time"
+)
+
+const (
+	CPU_PROFILE_FILEPATH string = "profile"
 )
 
 func main() {
 	debugFlag := flag.Bool("debug", false, "Debug Flag")
 	inputFilePath := flag.String("inputFile", "puzzleInput", "Path to input file.")
 	selectedPart := flag.Int("part", 0, "Part to execute. Must be 1 or 2.")
+	profile := flag.Bool("profile", false, "Flag to profile program")
 	flag.Parse()
+	if *profile {
+		f, err := os.Create(CPU_PROFILE_FILEPATH)
+		if err != nil {
+			slog.Error("could not create cpu profile file", "file", CPU_PROFILE_FILEPATH)
+			os.Exit(1)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
+
 	logFileHandler := SetLogging(*debugFlag)
 	defer logFileHandler.Close()
 
