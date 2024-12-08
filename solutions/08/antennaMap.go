@@ -72,13 +72,13 @@ func (antennaMap *AntennaMap) countAntinodesOfFrequency(frequency rune) []Coordi
 		for c2 := c1 + 1; c2 < len(frequencyCoordinates); c2 += 1 {
 			coord1 := frequencyCoordinates[c1]
 			coord2 := frequencyCoordinates[c2]
-			a1 := determineAntinode(coord1, coord2)
+			a1 := determineFirstOrderAntinode(coord1, coord2)
 			if a1.InBounds(antennaMap.width, antennaMap.height) {
 				// slog.Debug("found valid antinode", "frequency", frequency, "coord1", coord1, "coord2", coord2, "antinode", a1)
 				validAntinodes = append(validAntinodes, a1)
 			}
 
-			a2 := determineAntinode(frequencyCoordinates[c2], frequencyCoordinates[c1])
+			a2 := determineFirstOrderAntinode(frequencyCoordinates[c2], frequencyCoordinates[c1])
 			if a2.InBounds(antennaMap.width, antennaMap.height) {
 				// slog.Debug("found valid antinode", "frequency", frequency, "coord1", coord2, "coord2", coord1, "antinode", a2)
 				validAntinodes = append(validAntinodes, a2)

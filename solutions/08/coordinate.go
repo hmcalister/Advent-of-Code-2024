@@ -12,6 +12,6 @@ func (c Coordinate) InBounds(mapWidth, mapHeight int) bool {
 		c.Y < mapHeight
 }
 
-func determineAntinode(c1, c2 Coordinate) Coordinate {
+func determineFirstOrderAntinode(c1, c2 Coordinate) Coordinate {
 	return Coordinate{2*c1.X - c2.X, 2*c1.Y - c2.Y}
 }
