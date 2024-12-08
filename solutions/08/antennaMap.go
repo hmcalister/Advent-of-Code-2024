@@ -58,7 +58,31 @@ func (antennaMap *AntennaMap) CountAntinodesPart01() int {
 	return validAntinodes.Size()
 }
 
-// Count the antinodes of a given frequency, returning the valid (inbound) coordinates
+func (antennaMap *AntennaMap) CountAntinodesPart02() int {
+	validAntinodes := hashset.New[Coordinate]()
+	for frequency := range antennaMap.antennaFrequencyLocations {
+		frequencyAntinodes := antennaMap.countAllAntinodesOfFrequency(frequency)
+		slog.Debug("found antinodes of frequency", "frequency", frequency, "antinodes", frequencyAntinodes)
+		for _, antinode := range frequencyAntinodes {
+			validAntinodes.Add(antinode)
+		}
+	}
+
+	// DEBUG PRINT LOOP
+	// for y, row := range antennaMap.rawMap {
+	// 	for x, cell := range row {
+	// 		if validAntinodes.Contains(Coordinate{x, y}) {
+	// 			fmt.Print("#")
+	// 		} else {
+	// 			fmt.Print(string(cell))
+	// 		}
+	// 	}
+	// 	fmt.Println()
+	// }
+
+	return validAntinodes.Size()
+}
+
 // This function does not mutate any attributes of the AntennaMap and is hence concurrency safe
 func (antennaMap *AntennaMap) countFirstOrderAntinodesOfFrequency(frequency rune) []Coordinate {
 	frequencyCoordinates, ok := antennaMap.antennaFrequencyLocations[frequency]
