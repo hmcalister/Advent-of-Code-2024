@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"log/slog"
+	"sync"
 	"unicode"
 
 	hashset "github.com/hmcalister/Go-DSA/set/HashSet"
@@ -59,14 +60,24 @@ func (antennaMap *AntennaMap) CountAntinodesPart01() int {
 }
 
 func (antennaMap *AntennaMap) CountAntinodesPart02() int {
+	var validAntinodesMutex sync.Mutex
+	var workerWaitGroup sync.WaitGroup
 	validAntinodes := hashset.New[Coordinate]()
 	for frequency := range antennaMap.antennaFrequencyLocations {
-		frequencyAntinodes := antennaMap.countAllAntinodesOfFrequency(frequency)
-		slog.Debug("found antinodes of frequency", "frequency", frequency, "antinodes", frequencyAntinodes)
-		for _, antinode := range frequencyAntinodes {
-			validAntinodes.Add(antinode)
-		}
+		workerWaitGroup.Add(1)
+		go func() {
+			defer workerWaitGroup.Done()
+			frequencyAntinodes := antennaMap.countAllAntinodesOfFrequency(frequency)
+			slog.Debug("found antinodes of frequency", "frequency", frequency, "antinodes", frequencyAntinodes)
+			validAntinodesMutex.Lock()
+			for _, antinode := range frequencyAntinodes {
+				validAntinodes.Add(antinode)
+			}
+			validAntinodesMutex.Unlock()
+		}()
 	}
+
+	workerWaitGroup.Wait()
 
 	// DEBUG PRINT LOOP
 	// for y, row := range antennaMap.rawMap {
