@@ -113,3 +113,39 @@ func (antennaMap *AntennaMap) countFirstOrderAntinodesOfFrequency(frequency rune
 
 	return validAntinodes
 }
+
+// Count all antinodes of a given frequency, returning the valid (inbound) coordinates
+// This function does not mutate any attributes of the AntennaMap and is hence concurrency safe
+func (antennaMap *AntennaMap) countAllAntinodesOfFrequency(frequency rune) []Coordinate {
+	frequencyCoordinates, ok := antennaMap.antennaFrequencyLocations[frequency]
+	validAntinodes := make([]Coordinate, 0)
+	if !ok {
+		slog.Debug("requested frequency not found", "frequency", frequency)
+		return validAntinodes
+	}
+
+	for c1 := 0; c1 < len(frequencyCoordinates); c1 += 1 {
+		// Don't forget the antinode at the current position, i.e. dx=dy=0
+		coordOne := frequencyCoordinates[c1]
+		validAntinodes = append(validAntinodes, coordOne)
+		for c2 := c1 + 1; c2 < len(frequencyCoordinates); c2 += 1 {
+			coordTwo := frequencyCoordinates[c2]
+
+			antinodeOneStep := coordOne.Subtract(coordTwo)
+			antinodeOne := coordOne.Add(antinodeOneStep)
+			for antinodeOne.InBounds(antennaMap.width, antennaMap.height) {
+				validAntinodes = append(validAntinodes, antinodeOne)
+				antinodeOne = antinodeOne.Add(antinodeOneStep)
+			}
+
+			antinodeTwoStep := coordTwo.Subtract(coordOne)
+			antinodeTwo := coordTwo.Add(antinodeTwoStep)
+			for antinodeTwo.InBounds(antennaMap.width, antennaMap.height) {
+				validAntinodes = append(validAntinodes, antinodeTwo)
+				antinodeTwo = antinodeTwo.Add(antinodeTwoStep)
+			}
+		}
+	}
+
+	return validAntinodes
+}
