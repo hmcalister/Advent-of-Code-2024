@@ -68,12 +68,26 @@ func main() {
 func Part01(fileScanner *bufio.Scanner) (int, error) {
 	fileScanner.Scan()
 	diskMap := ParseLineToDiskMap(fileScanner.Text())
-	// slog.Debug("parsed disk map", "disk map", diskMap)
-	checksum := diskMap.ComputeBlockMoveChecksum()
+	for currentFileNode := diskMap.fileList.head; currentFileNode != nil; currentFileNode = currentFileNode.next {
+		slog.Debug("pre-defragment file list", "file info", currentFileNode.fileInfo)
+	}
+
+	diskMap.DefragmentMoveBlocks()
+
+	for currentFileNode := diskMap.fileList.head; currentFileNode != nil; currentFileNode = currentFileNode.next {
+		slog.Debug("post-defragment file list", "file info", currentFileNode.fileInfo)
+	}
+
+	checksum := diskMap.ComputeChecksum()
 
 	return checksum, nil
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	fileScanner.Scan()
+	diskMap := ParseLineToDiskMap(fileScanner.Text())
+	diskMap.DefragmentMoveBlocks()
+	checksum := diskMap.ComputeChecksum()
+
+	return checksum, nil
 }
