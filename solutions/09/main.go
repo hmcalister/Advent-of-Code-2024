@@ -86,7 +86,7 @@ func Part01(fileScanner *bufio.Scanner) (int, error) {
 func Part02(fileScanner *bufio.Scanner) (int, error) {
 	fileScanner.Scan()
 	diskMap := ParseLineToDiskMap(fileScanner.Text())
-	diskMap.DefragmentMoveBlocks()
+	diskMap.DefragmentMoveFiles()
 	checksum := diskMap.ComputeChecksum()
 
 	return checksum, nil
