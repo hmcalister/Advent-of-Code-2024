@@ -14,3 +14,13 @@ type MapInterval struct {
 	value int
 }
 
+func (interval MapInterval) computeChecksumContribution(startDiskIndex, endDiskIndex int) int {
+	// slog.Debug("checksum computation", "interval", interval, "start disk index", startDiskIndex, "end disk index", endDiskIndex)
+	return interval.value * ((endDiskIndex * (endDiskIndex - 1) / 2) - (startDiskIndex * (startDiskIndex - 1) / 2))
+}
+
+type DiskMap struct {
+	mapValues       []MapInterval
+	totalDiskLength int
+}
+
