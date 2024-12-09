@@ -108,3 +108,38 @@ func (diskMap *DiskMap) DefragmentMoveBlocks() {
 		}
 	}
 }
+
+func (diskMap *DiskMap) DefragmentMoveFiles() {
+	currentReverseFile := diskMap.fileList.tail
+reverseFileLoop:
+	for currentReverseFile != nil {
+		// Look forward (starting from the head and ending at the current reverse file)
+		// looking for the first gap that could house the current reverse file, splicing in there
+
+		slog.Debug("reverse file loop", "current reverse file info", currentReverseFile.fileInfo)
+
+		for currentForwardFile := diskMap.fileList.head; currentForwardFile != currentReverseFile; currentForwardFile = currentForwardFile.next {
+			currentBlockGap := currentForwardFile.next.fileInfo.startBlockIndex - (currentForwardFile.fileInfo.startBlockIndex + currentForwardFile.fileInfo.numBlocks)
+			slog.Debug("forward file loop", "current reverse file info", currentReverseFile.fileInfo, "current forward file info", currentForwardFile.fileInfo, "current block gap", currentBlockGap)
+
+			if currentBlockGap >= currentReverseFile.fileInfo.numBlocks {
+				// Splice the current reverse file out of its current position
+				// Splice the entire reverse file into this position
+				// Update the current reverse file to the old previous
+				// Update the current forward file to the new next
+
+				nextReverseFile := currentReverseFile.prev
+				diskMap.fileList.SpliceOut(currentReverseFile)
+				currentReverseFile.fileInfo.startBlockIndex = currentForwardFile.fileInfo.startBlockIndex + currentForwardFile.fileInfo.numBlocks
+				diskMap.fileList.SpliceIn(currentForwardFile, currentReverseFile)
+				currentReverseFile = nextReverseFile
+
+				slog.Debug("found gap for current reverse file", "new reverse file info", currentReverseFile.fileInfo)
+				continue reverseFileLoop
+			}
+		}
+
+		// If we made it here, we did not find a home for the poor reverse file, so we move to the next reverse file (i.e. currentReverseFile.prev)
+		currentReverseFile = currentReverseFile.prev
+	}
+}
