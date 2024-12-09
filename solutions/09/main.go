@@ -66,7 +66,12 @@ func main() {
 }
 
 func Part01(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	fileScanner.Scan()
+	diskMap := ParseLineToDiskMap(fileScanner.Text())
+	// slog.Debug("parsed disk map", "disk map", diskMap)
+	checksum := diskMap.ComputeBlockMoveChecksum()
+
+	return checksum, nil
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
