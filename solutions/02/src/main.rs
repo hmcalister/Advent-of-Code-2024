@@ -45,7 +45,7 @@ fn main() {
     );
 }
 
-fn is_safe(levels: Vec<i32>) -> bool {
+fn is_safe(levels: &Vec<i32>) -> bool {
     if levels.len() < 2 {
         return true;
     }
@@ -63,7 +63,7 @@ fn is_safe(levels: Vec<i32>) -> bool {
         if !(1..=3).contains(&difference) {
             return false;
         }
-        previous_value = level;
+        previous_value = *level;
     }
 
     true
@@ -94,7 +94,10 @@ fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
             Err(_) => continue,
         };
 
-        if is_safe(parsed_line) {
+        debug!("parsed line"=format!("{:?}", parsed_line), "line parsed successfully");
+
+        if is_safe(&parsed_line) {
+            debug!("line safe");
             total_safe += 1;
         }
     }
@@ -103,10 +106,51 @@ fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
 }
 
 fn part02(input_file_reader: BufReader<File>) -> Option<i64> {
-    for line_result in input_file_reader.lines() {
+    let mut total_safe = 0;
+    'report_loop: for line_result in input_file_reader.lines() {
         let line = line_result.unwrap();
         debug!("line" = line, "read line from input file");
+
+        let parsed_line_result: Result<Vec<_>, _> = line
+            .split_ascii_whitespace()
+            .map(|item| {
+                item.parse::<i32>().map_err(|e| {
+                    error!(
+                        "value" = item,
+                        "error" = format!("{:?}", e),
+                        "could not parse value in line"
+                    );
+                    e
+                })
+            })
+            .collect();
+
+        let parsed_line = match parsed_line_result {
+            Ok(parsed_line) => parsed_line,
+            Err(_) => continue,
+        };
+        debug!("parsed line"=format!("{:?}", parsed_line), "line parsed successfully");
+
+        if is_safe(&parsed_line) {
+            debug!("original line safe");
+            total_safe += 1;
+            continue 'report_loop;
+        }
+
+        for index in 0..parsed_line.len() {
+            let damped_levels: Vec<_> = parsed_line.iter()
+                .enumerate()
+                .filter(|(i, _)| *i!=index)
+                .map(|(_, item)| *item)
+                .collect();
+            debug!("damped index"=index, "damped levels"=format!("{:?}", parsed_line), "testing damped levels");
+            if is_safe(&damped_levels) {
+                debug!("damped line safe");
+                total_safe += 1;
+                continue 'report_loop;
+            }
+        }
     }
 
-    None
+    Some(total_safe)
 }
