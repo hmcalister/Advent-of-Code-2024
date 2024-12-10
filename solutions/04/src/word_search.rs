@@ -7,6 +7,7 @@ use std::{
 use tracing::{debug, error, info, trace};
 
 const XMAS_BYTES: [u8; 4] = [b'X', b'M', b'A', b'S'];
+const CROSSED_MAS_BYTES: [u8; 4] = [b'M', b'M', b'S', b'S'];
 
 #[derive(Debug)]
 pub struct WordSearch {
