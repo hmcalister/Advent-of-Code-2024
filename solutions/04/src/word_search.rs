@@ -146,24 +146,50 @@ impl WordSearch {
         total_xmas
     }
 
-    pub fn find_all_xmas(&self) -> i64 {
-        // let mut total_xmas = 0;
-        // for y in 0..self.height {
-        //     for x in 0..self.width {
-        //         debug!(
-        //             x,
-        //             y,
-        //             "linear coordinate" = self.cartesian_to_linear_coordinate(x, y),
-        //             "attempting coordinate"
-        //         );
-        //         total_xmas += self.count_xmas_at_coordinate(x, y)
-        //     }
-        // }
-        // total_xmas
+    fn count_crossed_mas(&self, x: usize, y: usize) -> i64 {
+        debug!(x,y,"finding crossed mas");
+        if x == 0
+            || x+1 == self.width
+            || y == 0
+            || y+1 == self.height
+            || self.grid_data[self.cartesian_to_linear_coordinate(x, y)] != b'A'
+        {
+            return 0;
+        }
 
+        let mut cross_values = [
+            self.grid_data[self.cartesian_to_linear_coordinate(x - 1, y - 1)],
+            self.grid_data[self.cartesian_to_linear_coordinate(x + 1, y - 1)],
+            self.grid_data[self.cartesian_to_linear_coordinate(x + 1, y + 1)],
+            self.grid_data[self.cartesian_to_linear_coordinate(x - 1, y + 1)],
+        ];
+
+        for rotation_index in 0..4 {
+            if cross_values
+                .iter()
+                .zip(CROSSED_MAS_BYTES.iter())
+                .all(|(a, b)| *a == *b)
+            {
+                debug!(x, y, rotation_index, "found crossed mas");
+                return 1;
+            }
+
+            cross_values.rotate_right(1);
+        }
+        0
+    }
+
+    pub fn find_all_xmas(&self) -> i64 {
         (0..self.grid_data.len())
             .map(|linear_coordinate| self.linear_to_cartesian_coordinate(linear_coordinate))
             .map(|(x, y)| self.count_xmas_at_coordinate(x, y))
-            .sum::<i64>()
+            .sum()
+    }
+
+    pub fn find_all_crossed_mas(&self) -> i64 {
+        (0..self.grid_data.len())
+            .map(|linear_coordinate| self.linear_to_cartesian_coordinate(linear_coordinate))
+            .map(|(x, y)| self.count_crossed_mas(x, y))
+            .sum()
     }
 }
