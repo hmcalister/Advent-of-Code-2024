@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::BufReader;
 
 use clap::Parser;
 use std::time::SystemTime;
@@ -53,10 +53,7 @@ fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
 }
 
 fn part02(input_file_reader: BufReader<File>) -> Option<i64> {
-    for line_result in input_file_reader.lines() {
-        let line = line_result.unwrap();
-        debug!("line" = line, "read line from input file");
-    }
-
-    None
+    let word_search = word_search::new_word_search_from_input(input_file_reader);
+    let crossed_mas = word_search.find_all_crossed_mas();
+    Some(crossed_mas)
 }
