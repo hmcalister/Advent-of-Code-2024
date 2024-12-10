@@ -46,17 +46,12 @@ fn main() {
     );
 }
 
-fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
+fn compute_all_multiplications(program_string: &str) -> i64 {
     let mut mul_operation_total = 0;
     let mul_operation_regex = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
-    let all_lines: String = input_file_reader
-        .lines()
-        .map(|s| s.unwrap())
-        .collect::<Vec<_>>()
-        .join(" ");
 
     for (_, [mul_left, mul_right]) in mul_operation_regex
-        .captures_iter(&all_lines)
+        .captures_iter(program_string)
         .map(|capture| capture.extract())
     {
         debug!(
@@ -81,14 +76,70 @@ fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
         mul_operation_total += mul_left * mul_right
     }
 
+    mul_operation_total
+}
+
+fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
+    let all_lines: String = input_file_reader
+        .lines()
+        .map(|s| s.unwrap())
+        .collect::<Vec<_>>()
+        .join(" ");
+
+    let mul_operation_total = compute_all_multiplications(&all_lines);
+
     Some(mul_operation_total)
 }
 
 fn part02(input_file_reader: BufReader<File>) -> Option<i64> {
-    for line_result in input_file_reader.lines() {
-        let line = line_result.unwrap();
-        debug!("line" = line, "read line from input file");
+    let mut mul_operation_total = 0;
+    let enable_regex = Regex::new(r"do\(\)").unwrap();
+    let disable_regex = Regex::new(r"don't\(\)").unwrap();
+
+    let all_input = input_file_reader
+        .lines()
+        .map(|s| s.unwrap())
+        .collect::<Vec<_>>()
+        .join(" ");
+    let mut remaining_input: &str = all_input.as_str();
+    let mut current_enabled_segment;
+
+    while remaining_input.len() > 0 {
+        // Find next disable index
+
+        let next_disable_index = match disable_regex.find(&remaining_input) {
+            Some(m) => {
+                debug!("match"=?m, "remaining input length"=remaining_input.len(), "found next disable command");
+                m.end()
+            }
+            None => {
+                debug!(
+                    "remaining input length" = remaining_input.len(),
+                    "no disable command found"
+                );
+                remaining_input.len()
+            }
+        };
+
+        (current_enabled_segment, remaining_input) = remaining_input.split_at(next_disable_index);
+        trace!("current enabled segment"=current_enabled_segment, "enabled segment found");
+        mul_operation_total += compute_all_multiplications(current_enabled_segment);
+
+        let next_enable_index = match enable_regex.find(&remaining_input) {
+            Some(m) => {
+                debug!("match"=?m, "remaining input length"=remaining_input.len(), "found next enable command");
+                m.start()
+            }
+            None => {
+                debug!(
+                    "remaining input length" = remaining_input.len(),
+                    "no enable command found"
+                );
+                remaining_input.len()
+            }
+        };
+        (_, remaining_input) = remaining_input.split_at(next_enable_index);
     }
 
-    None
+    Some(mul_operation_total)
 }
