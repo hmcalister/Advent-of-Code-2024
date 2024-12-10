@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"flag"
+	"hmcalister/AdventOfCode/topographicmap"
 	"log/slog"
 	"os"
 	"runtime/pprof"
@@ -66,9 +67,19 @@ func main() {
 }
 
 func Part01(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	allLines := make([]string, 0)
+	for fileScanner.Scan() {
+		allLines = append(allLines, fileScanner.Text())
+	}
+	topographicalMap := topographicmap.ParseInputToTopographicMap(allLines)
+	return topographicalMap.CalculateAllTrailheadOrthogonalScores(), nil
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	allLines := make([]string, 0)
+	for fileScanner.Scan() {
+		allLines = append(allLines, fileScanner.Text())
+	}
+	topographicalMap := topographicmap.ParseInputToTopographicMap(allLines)
+	return topographicalMap.CalculateAllTrailheadOrthogonalRatings(), nil
 }
