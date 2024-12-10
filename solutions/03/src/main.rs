@@ -1,6 +1,6 @@
+use regex::Regex;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use regex::Regex;
 
 use clap::Parser;
 use std::time::SystemTime;
@@ -49,28 +49,36 @@ fn main() {
 fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
     let mut mul_operation_total = 0;
     let mul_operation_regex = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
-    for line_result in input_file_reader.lines() {
-        let line = line_result.unwrap();
-        debug!("line" = line, "read line from input file");
+    let all_lines: String = input_file_reader
+        .lines()
+        .map(|s| s.unwrap())
+        .collect::<Vec<_>>()
+        .join(" ");
 
-        for (_, [mul_left, mul_right]) in mul_operation_regex.captures_iter(&line).map(|capture| capture.extract()){
-            debug!("mul_left"=mul_left, "mul_right"=mul_right, "found multiplication");
-            let mul_left = match mul_left.parse::<i64>(){
-                Ok(num) => num,
-                Err(_) => {
-                    error!("mul_left"=mul_left, "failed to parse integer mul_left");
-                    continue;
-                }
-            };
-            let mul_right = match mul_right.parse::<i64>(){
-                Ok(num) => num,
-                Err(_) => {
-                    error!("mul_right"=mul_right, "failed to parse integer mul_right");
-                    continue;
-                }
-            };
-            mul_operation_total += mul_left*mul_right
+    for (_, [mul_left, mul_right]) in mul_operation_regex
+        .captures_iter(&all_lines)
+        .map(|capture| capture.extract())
+    {
+        debug!(
+            "mul_left" = mul_left,
+            "mul_right" = mul_right,
+            "found multiplication"
+        );
+        let mul_left = match mul_left.parse::<i64>() {
+            Ok(num) => num,
+            Err(_) => {
+                error!("mul_left" = mul_left, "failed to parse integer mul_left");
+                continue;
+            }
         };
+        let mul_right = match mul_right.parse::<i64>() {
+            Ok(num) => num,
+            Err(_) => {
+                error!("mul_right" = mul_right, "failed to parse integer mul_right");
+                continue;
+            }
+        };
+        mul_operation_total += mul_left * mul_right
     }
 
     Some(mul_operation_total)
