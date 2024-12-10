@@ -49,7 +49,7 @@ fn main() {
 fn parse_dependency_graph_and_orders(
     input_file_reader: BufReader<File>,
 ) -> (dependency_graph::DependencyGraph, Vec<Vec<i32>>) {
-    let mut dep_graph = dependency_graph::new_dependency_graph();
+    let mut graph = dependency_graph::new_dependency_graph();
 
     let mut all_lines = input_file_reader.lines().into_iter();
 
@@ -80,7 +80,7 @@ fn parse_dependency_graph_and_orders(
             }
         };
 
-        dep_graph.add_dependency(prior_item, posterior_item);
+        graph.add_dependency(prior_item, posterior_item);
     }
 
     let mut orders = Vec::new();
@@ -105,16 +105,16 @@ fn parse_dependency_graph_and_orders(
         };
     }
 
-    (dep_graph, orders)
+    (graph, orders)
 }
 
 fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
-    let (dep_graph, orders) = parse_dependency_graph_and_orders(input_file_reader);
-    debug!(?dep_graph, "dependency graph parsed");
+    let (graph, orders) = parse_dependency_graph_and_orders(input_file_reader);
+    debug!(?graph, "dependency graph parsed");
 
     let mut middle_number_sum: i64 = 0;
     for order in orders {
-        if let Some(topologically_sorted_order) = dep_graph.topological_sort(&order) {
+        if let Some(topologically_sorted_order) = graph.topological_sort(&order) {
             if topologically_sorted_order
                 .iter()
                 .zip(order.iter())
