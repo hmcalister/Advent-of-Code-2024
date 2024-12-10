@@ -51,11 +51,11 @@ fn parse_dependency_graph_and_orders(
 ) -> (dependency_graph::DependencyGraph, Vec<Vec<i32>>) {
     let mut graph = dependency_graph::new_dependency_graph();
 
-    let mut all_lines = input_file_reader.lines().into_iter();
+    let mut all_lines = input_file_reader.lines();
 
     for line_result in &mut all_lines {
         let line = line_result.unwrap();
-        if line.len() == 0 {
+        if line.is_empty() {
             break;
         }
         debug!("line" = line, "read line from input file");
@@ -90,7 +90,6 @@ fn parse_dependency_graph_and_orders(
 
         match line
             .split(",")
-            .into_iter()
             .map(|item_str| item_str.parse::<i32>())
             .collect::<Result<Vec<_>, _>>()
         {

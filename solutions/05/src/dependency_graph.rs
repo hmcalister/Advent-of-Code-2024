@@ -67,7 +67,7 @@ impl DependencyGraph {
             // Walk over all dependencies, filtering only the relevant dependencies, and adding these to the list
             // Also increment the indegree as we go
             let _ = all_item_dependencies
-                .into_iter()
+                .iter()
                 .filter(|dependency| order_items.contains(dependency))
                 .map(|posterior_item| {
                     order_specific_item_dependencies.push(*posterior_item);
@@ -108,8 +108,7 @@ impl DependencyGraph {
         // If there are no more zero indegree items, we cannot continue to add these, 
         // but we may not have added all items to the topologically sorted vector.
         // This is handled in the next if statement.
-        while zero_indegree_items.len() > 0 {
-            let next_zero_indegree_item = zero_indegree_items.pop().unwrap();
+        while let Some(next_zero_indegree_item) = zero_indegree_items.pop()  {
             topologically_sorted_order.push(next_zero_indegree_item);
             for posterior_item in order_specific_dependencies
                 .get(&next_zero_indegree_item)
