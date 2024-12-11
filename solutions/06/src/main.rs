@@ -63,11 +63,10 @@ fn main() {
 fn parse_input_to_obstacle_map_and_state(
     input_file_reader: BufReader<File>,
 ) -> (ObstacleMap, Option<GuardState>) {
-    
     let all_lines: Vec<_> = input_file_reader
-    .lines()
-    .collect::<Result<Vec<_>, _>>()
-    .unwrap();
+        .lines()
+        .collect::<Result<Vec<_>, _>>()
+        .unwrap();
     let mut obs_map = obstacle_map::new(all_lines[0].len() as i32, all_lines[0].len() as i32);
     let mut guard: Option<GuardState> = None;
 
@@ -107,37 +106,37 @@ fn parse_input_to_obstacle_map_and_state(
     (obs_map, guard)
 }
 
-/// Compute the number of steps required to leave the bounds of the map.
-/// 
+/// Compute the ordered sequence of states required to leave the bounds of the map.
+///
 /// Returns None if the guard loops.
-fn compute_path(obs_map: &ObstacleMap, initial_state: GuardState) -> Option<Vec<Coordinate>> {
+fn compute_path(obs_map: &ObstacleMap, initial_state: GuardState) -> Option<Vec<GuardState>> {
     let _span = span!(Level::DEBUG, "computing path", "initial_state"=?initial_state,).entered();
     let mut seen_states: HashSet<GuardState> = HashSet::new();
-    let mut seen_coordinates: Vec<Coordinate> = Vec::new();
+    let mut ordered_states: Vec<GuardState> = Vec::new();
     let mut current_state = initial_state;
     let mut total_steps = 0;
 
     loop {
         if seen_states.contains(&current_state) {
-            return None
+            return None;
         }
         seen_states.insert(current_state);
-        seen_coordinates.push(current_state.get_coordinate());
-        
+        ordered_states.push(current_state);
+
         let next_state = current_state.step();
         match obs_map.is_obstacle(next_state.get_coordinate()) {
             Some(false) => {
                 total_steps += 1;
                 current_state = next_state;
-                debug!("current state"=?current_state, "total steps"=total_steps, "took step");
-            },
+                trace!("current state"=?current_state, "total steps"=total_steps, "took step");
+            }
             Some(true) => {
-                debug!("current state"=?current_state, "total steps"=total_steps, "encountered obstacle");
+                trace!("current state"=?current_state, "total steps"=total_steps, "encountered obstacle");
                 current_state = current_state.encounter_obstacle();
-            },
+            }
             None => {
-                debug!("current state"=?current_state,"left map");
-                return Some(seen_coordinates);
+                trace!("current state"=?current_state,"left map");
+                return Some(ordered_states);
             }
         }
     }
@@ -154,17 +153,60 @@ fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
     debug!("obstacle map"=?obs_map, "initial state"=?guard, "parsed input");
 
     match compute_path(&obs_map, guard) {
-        Some(seen_coordinates) => {
-            let unique_coordinates = seen_coordinates.into_iter().collect::<HashSet<_>>();
-            return Some(unique_coordinates.len() as i64)
-        },
+        Some(ordered_states) => {
+            let unique_coordinates = ordered_states
+                .into_iter()
+                .map(|state| state.get_coordinate())
+                .collect::<HashSet<_>>();
+            return Some(unique_coordinates.len() as i64);
+        }
         None => {
-            error!("did not find a vlid path for part 01");
+            error!("did not find a valid path for part 01");
             return None;
         }
     }
-
 }
 
 fn part02(input_file_reader: BufReader<File>) -> Option<i64> {
+    let (mut obs_map, guard) = match parse_input_to_obstacle_map_and_state(input_file_reader) {
+        (obs_map, Some(guard)) => (obs_map, guard),
+        (_, None) => {
+            error!("failed to initialize guard state from input");
+            return None;
+        }
+    };
+    debug!("obstacle map"=?obs_map, "initial state"=?guard, "parsed input");
+
+    let original_path = match compute_path(&obs_map, guard) {
+        Some(ordered_states) => ordered_states,
+        None => {
+            error!("did not find a valid path for unobstructed input");
+            return None;
+        }
+    };
+
+    let mut unique_loop_creating_obstruction_locations: HashSet<Coordinate> = HashSet::new();
+    let mut previously_visited_coordinates: HashSet<Coordinate> = HashSet::new();
+    for state in original_path {
+        let next_state_coordinate = state.step().get_coordinate();
+        if previously_visited_coordinates.contains(&next_state_coordinate) || !obs_map.in_bounds(next_state_coordinate){
+             continue;
+        }
+        if let Some(false) = obs_map.is_obstacle(next_state_coordinate) {
+            obs_map.add_obstacle(next_state_coordinate);
+            match compute_path(&obs_map, state) {
+                Some(_) => {
+                    trace!("initial state"=?state, "inserted obstacle"=?next_state_coordinate, "obstacle did not create loop");
+                }
+                None => {
+                    unique_loop_creating_obstruction_locations.insert(next_state_coordinate);
+                    debug!("initial state"=?state, "inserted obstacle"=?next_state_coordinate, "obstacle created loop");
+                }
+            }
+            obs_map.remove_obstacle(next_state_coordinate);
+        }
+        previously_visited_coordinates.insert(state.get_coordinate());
+    }
+
+    return Some(unique_loop_creating_obstruction_locations.len() as i64);
 }
