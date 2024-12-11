@@ -6,7 +6,9 @@ use std::time::SystemTime;
 #[allow(unused_imports)]
 use tracing::{debug, error, info, trace};
 
+mod calibration;
 mod logging;
+use calibration::operation;
 
 /// Program to solve Advent of Code puzzles
 #[derive(Parser, Debug)]
@@ -46,19 +48,45 @@ fn main() {
 }
 
 fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
+    let mut total_valid_calibration_target_values = 0;
+    let possible_operations: Vec<operation::Operation> =
+        vec![operation::addition, operation::multiplication];
     for line_result in input_file_reader.lines() {
         let line = line_result.unwrap();
         debug!("line" = line, "read line from input file");
+
+        let Some(cal) = calibration::parse_line_to_calibration(&line) else {
+            error!(?line, "could not parse line to calibration");
+            continue;
+        };
+
+        if cal.is_valid(&possible_operations) {
+            debug!(?cal, "found valid calibration");
+            total_valid_calibration_target_values+=cal.get_target_value();
+        }
     }
 
-    None
+    Some(total_valid_calibration_target_values)
 }
 
 fn part02(input_file_reader: BufReader<File>) -> Option<i64> {
+    let mut total_valid_calibration_target_values = 0;
+    let possible_operations: Vec<operation::Operation> =
+        vec![operation::addition, operation::multiplication, operation::concatenation];
     for line_result in input_file_reader.lines() {
         let line = line_result.unwrap();
         debug!("line" = line, "read line from input file");
+
+        let Some(cal) = calibration::parse_line_to_calibration(&line) else {
+            error!(?line, "could not parse line to calibration");
+            continue;
+        };
+
+        if cal.is_valid(&possible_operations) {
+            debug!(?cal, "found valid calibration");
+            total_valid_calibration_target_values+=cal.get_target_value();
+        }
     }
 
-    None
+    Some(total_valid_calibration_target_values)
 }
