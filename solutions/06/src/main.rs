@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
@@ -97,7 +97,7 @@ fn parse_input_to_obstacle_map_and_state(
                     guard = Some(guard_state::new(c, Direction::Left));
                 }
                 _ => {
-                    trace!("found other byte");
+                    // trace!("found other byte");
                 }
             }
         }
@@ -128,14 +128,14 @@ fn compute_path(obs_map: &ObstacleMap, initial_state: GuardState) -> Option<Vec<
             Some(false) => {
                 total_steps += 1;
                 current_state = next_state;
-                trace!("current state"=?current_state, "total steps"=total_steps, "took step");
+                // trace!("current state"=?current_state, "total steps"=total_steps, "took step");
             }
             Some(true) => {
-                trace!("current state"=?current_state, "total steps"=total_steps, "encountered obstacle");
+                // trace!("current state"=?current_state, "total steps"=total_steps, "encountered obstacle");
                 current_state = current_state.encounter_obstacle();
             }
             None => {
-                trace!("current state"=?current_state,"left map");
+                // trace!("current state"=?current_state,"left map");
                 return Some(ordered_states);
             }
         }
@@ -158,11 +158,11 @@ fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
                 .into_iter()
                 .map(|state| state.get_coordinate())
                 .collect::<HashSet<_>>();
-            return Some(unique_coordinates.len() as i64);
+            Some(unique_coordinates.len() as i64)
         }
         None => {
             error!("did not find a valid path for part 01");
-            return None;
+            None
         }
     }
 }
@@ -196,11 +196,11 @@ fn part02(input_file_reader: BufReader<File>) -> Option<i64> {
             obs_map.add_obstacle(next_state_coordinate);
             match compute_path(&obs_map, state) {
                 Some(_) => {
-                    trace!("initial state"=?state, "inserted obstacle"=?next_state_coordinate, "obstacle did not create loop");
+                    trace!("initial state"=?state, "inserted obstacle"=?next_state_coordinate, "inserted obstacle did not create loop");
                 }
                 None => {
                     unique_loop_creating_obstruction_locations.insert(next_state_coordinate);
-                    debug!("initial state"=?state, "inserted obstacle"=?next_state_coordinate, "obstacle created loop");
+                    debug!("initial state"=?state, "inserted obstacle"=?next_state_coordinate, "inserted obstacle created loop");
                 }
             }
             obs_map.remove_obstacle(next_state_coordinate);
@@ -208,5 +208,5 @@ fn part02(input_file_reader: BufReader<File>) -> Option<i64> {
         previously_visited_coordinates.insert(state.get_coordinate());
     }
 
-    return Some(unique_loop_creating_obstruction_locations.len() as i64);
+    Some(unique_loop_creating_obstruction_locations.len() as i64)
 }

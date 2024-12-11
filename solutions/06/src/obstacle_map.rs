@@ -14,8 +14,8 @@ pub struct ObstacleMap {
 pub fn new(width: i32, height: i32) -> ObstacleMap {
     ObstacleMap {
         obstacle_map: HashSet::new(),
-        width: width,
-        height: height,
+        width,
+        height,
     }
 }
 
@@ -26,9 +26,9 @@ impl ObstacleMap {
 
     pub fn is_obstacle(&self, coord: Coordinate) -> Option<bool> {
         if !self.in_bounds(coord) {
-            return None;
+            None
         } else {
-            return Some(self.obstacle_map.contains(&coord));
+            Some(self.obstacle_map.contains(&coord))
         }
     }
 
