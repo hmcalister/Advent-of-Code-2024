@@ -20,8 +20,12 @@ pub fn new(width: i32, height: i32) -> ObstacleMap {
 }
 
 impl ObstacleMap {
+    pub fn in_bounds(&self, coord: Coordinate) -> bool {
+        coord.in_bounds(0, self.width, 0, self.height)
+    }
+
     pub fn is_obstacle(&self, coord: Coordinate) -> Option<bool> {
-        if !coord.in_bounds(0, self.width, 0, self.height) {
+        if !self.in_bounds(coord) {
             return None;
         } else {
             return Some(self.obstacle_map.contains(&coord));
