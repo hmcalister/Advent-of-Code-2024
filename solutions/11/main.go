@@ -6,6 +6,8 @@ import (
 	"log/slog"
 	"os"
 	"runtime/pprof"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -66,9 +68,51 @@ func main() {
 }
 
 func Part01(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	fileScanner.Scan()
+	line := fileScanner.Text()
+	stoneValueStrings := strings.Split(line, " ")
+
+	stoneCountMap := NewStoneCounter()
+	for _, stoneValueString := range stoneValueStrings {
+		stoneValue, err := strconv.Atoi(stoneValueString)
+		if err != nil {
+			slog.Error("could not parse stone value string", "stone value string", stoneValueString, "error", err)
+			continue
+		}
+
+		slog.Debug("added next stone", "stone value", stoneValue)
+		stoneCountMap.AddStone(stoneValue, 1)
+	}
+
+	for i := 1; i <= 25; i += 1 {
+		stoneCountMap.Blink()
+		slog.Debug("finished blink", "blink index", i, "num stones", stoneCountMap.NumStones())
+	}
+
+	return stoneCountMap.NumStones(), nil
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	fileScanner.Scan()
+	line := fileScanner.Text()
+	stoneValueStrings := strings.Split(line, " ")
+
+	stoneCountMap := NewStoneCounter()
+	for _, stoneValueString := range stoneValueStrings {
+		stoneValue, err := strconv.Atoi(stoneValueString)
+		if err != nil {
+			slog.Error("could not parse stone value string", "stone value string", stoneValueString, "error", err)
+			continue
+		}
+
+		slog.Debug("added next stone", "stone value", stoneValue)
+		stoneCountMap.AddStone(stoneValue, 1)
+	}
+
+	for i := 1; i <= 75; i += 1 {
+		stoneCountMap.Blink()
+		slog.Debug("finished blink", "blink index", i, "num stones", stoneCountMap.NumStones())
+	}
+
+	return stoneCountMap.NumStones(), nil
 }
