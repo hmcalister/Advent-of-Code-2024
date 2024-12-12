@@ -1,9 +1,9 @@
 package garden
 
 import (
-	"hmcalister/AdventOfCode/hashset"
 	"log/slog"
 
+	hashset "github.com/hmcalister/Go-DSA/set/HashSet"
 	arraystack "github.com/hmcalister/Go-DSA/stack/ArrayStack"
 )
 

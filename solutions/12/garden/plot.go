@@ -1,8 +1,6 @@
 package garden
 
-import (
-	"hmcalister/AdventOfCode/hashset"
-)
+import hashset "github.com/hmcalister/Go-DSA/set/HashSet"
 
 type plot struct {
 	coordinates *hashset.HashSet[Coordinate]
@@ -52,8 +50,7 @@ func (plotData *plot) Add(c Coordinate) {
 //
 // And similar for other edges
 func (plotData *plot) countEdges() int {
-	numEdges := 0
-	for _, c := range plotData.coordinates.Items() {
+	totalEdges := func(c Coordinate, edgeCount int) int {
 		containsUpperLeft := plotData.coordinates.Contains(Coordinate{c.X - 1, c.Y - 1})
 		containsUpperMiddle := plotData.coordinates.Contains(Coordinate{c.X, c.Y - 1})
 		containsUpperRight := plotData.coordinates.Contains(Coordinate{c.X + 1, c.Y - 1})
@@ -65,25 +62,29 @@ func (plotData *plot) countEdges() int {
 
 		// Left edge
 		if !containsMiddleLeft && (!containsUpperMiddle || (containsUpperMiddle && containsUpperLeft)) {
-			numEdges += 1
+			edgeCount += 1
 		}
 
 		// Top Edge
 		if !containsUpperMiddle && (!containsMiddleRight || (containsMiddleRight && containsUpperRight)) {
-			numEdges += 1
+			edgeCount += 1
 		}
 
 		// Right Edge
 		if !containsMiddleRight && (!containsLowerMiddle || (containsLowerMiddle && containsLowerRight)) {
-			numEdges += 1
+			edgeCount += 1
 		}
 
 		// Bottom Edge
 		if !containsLowerMiddle && (!containsMiddleLeft || (containsMiddleLeft && containsLowerLeft)) {
-			numEdges += 1
+			edgeCount += 1
 		}
 
+		return edgeCount
 	}
+
+	numEdges := hashset.Fold(plotData.coordinates, 0, totalEdges)
+
 	return numEdges
 }
 
