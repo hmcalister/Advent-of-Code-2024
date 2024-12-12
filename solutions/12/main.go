@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"flag"
+	"hmcalister/AdventOfCode/garden"
 	"log/slog"
 	"os"
 	"runtime/pprof"
@@ -66,7 +67,13 @@ func main() {
 }
 
 func Part01(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	gardenData := make([][]rune, 0)
+	for fileScanner.Scan() {
+		gardenData = append(gardenData, []rune(fileScanner.Text()))
+	}
+	garden := garden.NewGarden(gardenData)
+
+	return garden.FencingPrice(), nil
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
