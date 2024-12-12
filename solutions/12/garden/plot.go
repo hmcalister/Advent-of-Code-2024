@@ -34,15 +34,6 @@ func (plotData *plot) Add(c Coordinate) {
 	}
 }
 
-func (plotData *plot) isInternalCoordinate(c Coordinate) bool {
-	for _, neighbor := range c.GetOrthogonalNeighbors() {
-		if !plotData.coordinates.Contains(neighbor) {
-			return false
-		}
-	}
-	return true
-}
-
 // Idea for determining edge
 //
 // For left edge --- if coordinate above is NOT in plot
