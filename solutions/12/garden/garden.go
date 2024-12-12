@@ -1,9 +1,9 @@
 package garden
 
 import (
+	"hmcalister/AdventOfCode/hashset"
 	"log/slog"
 
-	hashset "github.com/hmcalister/Go-DSA/set/HashSet"
 	arraystack "github.com/hmcalister/Go-DSA/stack/ArrayStack"
 )
 
@@ -63,20 +63,28 @@ func (garden *Garden) addNewPlot(initialCoordinate Coordinate) {
 		if currentRune != initialRune {
 			continue
 		}
-		slog.Debug("found additional plot coordinate", "initial coordinate", initialCoordinate, "current coordinate", currentCoordinate)
+		// slog.Debug("found additional plot coordinate", "initial coordinate", initialCoordinate, "current coordinate", currentCoordinate)
 		garden.coordinatesInPlots.Add(currentCoordinate)
 		p.Add(currentCoordinate)
 		for _, neighbor := range currentCoordinate.GetOrthogonalNeighbors() {
 			fillCoordinateStack.Add(neighbor)
 		}
 	}
-	slog.Info("new plot initialized", "plot rune", initialRune, "plot area", p.coordinates.Size(), "plot perimeter", p.perimeter)
+	slog.Info("new plot initialized", "plot rune", initialRune, "plot area", p.coordinates.Size(), "plot perimeter", p.perimeter, "plot edges", p.countEdges())
 }
 
 func (garden *Garden) FencingPrice() int {
 	totalFencingPrice := 0
 	for _, p := range garden.plots {
 		totalFencingPrice += p.fencingPrice()
+	}
+	return totalFencingPrice
+}
+
+func (garden *Garden) DiscountFencingPrice() int {
+	totalFencingPrice := 0
+	for _, p := range garden.plots {
+		totalFencingPrice += p.discountFencingPrice()
 	}
 	return totalFencingPrice
 }
