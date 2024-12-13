@@ -144,9 +144,34 @@ func parseInputToClawMachines(fileScanner *bufio.Scanner) []*clawmachine.ClawMac
 }
 
 func Part01(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	clawMachines := parseInputToClawMachines(fileScanner)
+	totalCost := 0
+	for _, machine := range clawMachines {
+		cost, err := machine.ComputeLowestTokenCost()
+		if err != nil {
+			slog.Error("error when computing token cost", "error", err)
+			continue
+		}
+		totalCost += cost
+		slog.Debug("found lowest token cost", "current machine token cost", cost, "updated total token cost", totalCost)
+
+	}
+	return totalCost, nil
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	clawMachines := parseInputToClawMachines(fileScanner)
+	totalCost := 0
+	for _, machine := range clawMachines {
+		machine.FixUnitConversion()
+		cost, err := machine.ComputeLowestTokenCost()
+		if err != nil {
+			slog.Error("error when computing token cost", "error", err)
+			continue
+		}
+		totalCost += cost
+		slog.Debug("found lowest token cost", "current machine token cost", cost, "updated total token cost", totalCost)
+
+	}
+	return totalCost, nil
 }
