@@ -21,10 +21,11 @@ var (
 )
 
 func floatIntConversion(x float64) (int, error) {
-	intCast := int(math.Round(x))
-	if math.Abs(x-float64(intCast)) > floatIntConversionEpsilon {
+	roundedX := math.Round(x)
+	if math.Abs(roundedX-x) > floatIntConversionEpsilon {
 		return 0, ErrorFloatNotCastableToInt
 	}
+	intCast := int(roundedX)
 	return intCast, nil
 }
 
