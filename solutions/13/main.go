@@ -2,10 +2,14 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"flag"
+	"hmcalister/AdventOfCode/clawmachine"
 	"log/slog"
 	"os"
+	"regexp"
 	"runtime/pprof"
+	"strconv"
 	"time"
 )
 
@@ -63,6 +67,80 @@ func main() {
 	}
 
 	slog.Info("computation completed", "result", result, "computation time elapsed (ns)", computationEndTime.Sub(computationStartTime).Nanoseconds())
+}
+
+func parseInputToClawMachines(fileScanner *bufio.Scanner) []*clawmachine.ClawMachine {
+	machines := make([]*clawmachine.ClawMachine, 0)
+
+	buttonARegex := regexp.MustCompile(`Button A: X([+-]\d*), Y([+-]\d*)`)
+	buttonBRegex := regexp.MustCompile(`Button B: X([+-]\d*), Y([+-]\d*)`)
+	prizeRegex := regexp.MustCompile(`Prize: X=([+-]?\d*), Y=([+-]?\d*)`)
+
+	// We still have some input
+	for fileScanner.Scan() {
+		buttonALine := fileScanner.Text()
+		if !fileScanner.Scan() {
+			slog.Debug("unexpected EOF when reading button B line")
+			return machines
+		}
+		buttonBLine := fileScanner.Text()
+		if !fileScanner.Scan() {
+			slog.Debug("unexpected EOF when reading prize line")
+			return machines
+		}
+		prizeLine := fileScanner.Text()
+		fileScanner.Scan()
+
+		slog.Debug("next claw machine input read", "button A line", buttonALine, "button B line", buttonBLine, "prize line", prizeLine)
+
+		buttonAMatches := buttonARegex.FindStringSubmatch(buttonALine)
+		if buttonAMatches == nil || len(buttonAMatches) != 3 {
+			slog.Error("button A line not of expected format", "button A line", buttonALine, "button A regex matches", buttonAMatches)
+			continue
+		}
+		buttonAX, errA := strconv.ParseFloat(buttonAMatches[1], 64)
+		buttonAY, errB := strconv.ParseFloat(buttonAMatches[2], 64)
+		if errors.Join(errA, errB) != nil {
+			slog.Error("could not parse button A line", "button A line", buttonALine, "button A regex matches", buttonAMatches)
+			continue
+		}
+
+		buttonBMatches := buttonBRegex.FindStringSubmatch(buttonBLine)
+		if buttonBMatches == nil || len(buttonBMatches) != 3 {
+			slog.Error("button B line not of expected format", "button B line", buttonBLine, "button B regex matches", buttonBMatches)
+			continue
+		}
+		buttonBX, errA := strconv.ParseFloat(buttonBMatches[1], 64)
+		buttonBY, errB := strconv.ParseFloat(buttonBMatches[2], 64)
+		if errors.Join(errA, errB) != nil {
+			slog.Error("could not parse button B line", "button B line", buttonBLine, "button B regex matches", buttonBMatches)
+			continue
+		}
+
+		prizeMatches := prizeRegex.FindStringSubmatch(prizeLine)
+		if prizeMatches == nil || len(prizeMatches) != 3 {
+			slog.Error("prize line not of expected format", "prize line", prizeLine, "prize regex matches", prizeMatches)
+			continue
+		}
+		prizeX, errA := strconv.ParseFloat(prizeMatches[1], 64)
+		prizeY, errB := strconv.ParseFloat(prizeMatches[2], 64)
+		if errors.Join(errA, errB) != nil {
+			slog.Error("could not parse prize line", "prize line", prizeLine, "prize regex matches", prizeMatches)
+		}
+
+		nextClawMachine := clawmachine.NewClawMachine(
+			buttonAX,
+			buttonAY,
+			buttonBX,
+			buttonBY,
+			prizeX,
+			prizeY,
+		)
+		slog.Debug("input parsed to claw machine", "claw machine", nextClawMachine)
+		machines = append(machines, nextClawMachine)
+	}
+
+	return machines
 }
 
 func Part01(fileScanner *bufio.Scanner) (int, error) {
