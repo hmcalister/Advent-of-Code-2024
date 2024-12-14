@@ -57,3 +57,41 @@ pub fn new_antenna_map(input_file_reader: BufReader<File>) -> Option<AntennaMap>
     return Some(antenna_map);
 }
 
+impl AntennaMap {
+    fn check_coordinate_inbounds(&self, coord: Coordinate) -> bool {
+        coord.x >= 0 && coord.x < self.map_width as i32 && coord.y >= 0 && coord.y < self.map_height as i32
+    }
+
+    pub fn count_first_order_antinodes(&self) -> i64 {
+        let mut valid_antinodes = HashSet::new();
+
+        for freq in &self.antenna_frequency_list {
+            let _span = span!(Level::DEBUG, "finding first order antinodes", "antenna frequency"=?freq).entered();
+            let antenna_positions = self.antenna_positions_by_frequency.get(&freq).unwrap();
+
+            for first_antenna_index in 0..antenna_positions.len() {
+                let first_antenna_position = antenna_positions[first_antenna_index];
+                for second_antenna_index in first_antenna_index+1..antenna_positions.len() {
+                    let second_antenna_position = antenna_positions[second_antenna_index];
+
+                    // Ordering (first, second)
+                    let position_delta = first_antenna_position.subtract_coordinate(second_antenna_position);
+                    let potential_antinode = first_antenna_position.add_coordinate(position_delta);
+                    if self.check_coordinate_inbounds(potential_antinode) {
+                        debug!("antinode coordinate" = ?potential_antinode, "found antinode");
+                        valid_antinodes.insert(potential_antinode);
+                    }
+
+                    let position_delta = second_antenna_position.subtract_coordinate(first_antenna_position);
+                    let potential_antinode = second_antenna_position.add_coordinate(position_delta);
+                    if self.check_coordinate_inbounds(potential_antinode) {
+                        debug!("antinode coordinate" = ?potential_antinode, "found antinode");
+                        valid_antinodes.insert(potential_antinode);
+                    }
+                }
+            }
+        }
+
+        valid_antinodes.len() as i64
+    }
+}
