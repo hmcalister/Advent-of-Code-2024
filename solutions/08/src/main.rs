@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufRead, BufReader};
+use std::io::BufReader;
 
 use clap::Parser;
 use std::time::SystemTime;
@@ -54,10 +54,8 @@ fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
 }
 
 fn part02(input_file_reader: BufReader<File>) -> Option<i64> {
-    for line_result in input_file_reader.lines() {
-        let line = line_result.unwrap();
-        debug!("line" = line, "read line from input file");
-    }
+    let antenna_map = antenna::new_antenna_map(input_file_reader).expect("could not parse antenna map");
+    debug!(?antenna_map, "parsed antenna map");
 
-    None
+    Some(antenna_map.count_all_antinodes())
 }
