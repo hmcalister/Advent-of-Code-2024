@@ -111,7 +111,63 @@ func parseInputToRobots(fileScanner *bufio.Scanner) []*robot.Robot {
 }
 
 func Part01(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	if !fileScanner.Scan() {
+		slog.Error("no input found")
+		return 0, errors.New("no input found")
+	}
+	gridSizeLine := fileScanner.Text()
+	gridSizeStrs := strings.Split(gridSizeLine, ",")
+	if len(gridSizeStrs) != 2 {
+		slog.Error("did not find an initial line with format x,y for grid size", "line", gridSizeLine, "split line", gridSizeStrs)
+		return 0, errors.New("grid size line does not match expected format x,y")
+	}
+	gridX, gridXErr := strconv.Atoi(gridSizeStrs[0])
+	gridY, gridYErr := strconv.Atoi(gridSizeStrs[1])
+	if errors.Join(gridXErr, gridYErr) != nil {
+		slog.Error("could not parse grid line to integers", "line", gridSizeLine, "grid size strs", gridSizeStrs)
+		return 0, errors.New("grid size line does not contain integers")
+	}
+
+	robots := parseInputToRobots(fileScanner)
+	// slog.Debug("parsed input", "gridX", gridX, "gridY", gridY, "robots", robots)
+
+	quadrantCounts := []int{0, 0, 0, 0}
+	coordinateCounts := make(map[robot.Vector2]int)
+	for _, robot := range robots {
+		nextPosition := robot.ComputePosition(gridX, gridY, 100)
+
+		if nextPosition.X < gridX/2 && nextPosition.Y < gridY/2 {
+			quadrantCounts[0] += 1
+		} else if nextPosition.X > gridX/2 && nextPosition.Y < gridY/2 {
+			quadrantCounts[1] += 1
+		} else if nextPosition.X < gridX/2 && nextPosition.Y > gridY/2 {
+			quadrantCounts[2] += 1
+		} else if nextPosition.X > gridX/2 && nextPosition.Y > gridY/2 {
+			quadrantCounts[3] += 1
+		}
+		coordinateCounts[nextPosition] += 1
+		slog.Debug("robot stepped", "robot", *robot, "next position", nextPosition, "updated quadrant counts", quadrantCounts)
+	}
+
+	for y := 0; y < gridY; y += 1 {
+		for x := 0; x < gridX; x += 1 {
+			coordinate := robot.Vector2{X: x, Y: y}
+			coordinateCount, ok := coordinateCounts[coordinate]
+			if !ok {
+				fmt.Print(".")
+			} else {
+				fmt.Print(coordinateCount)
+			}
+		}
+		fmt.Println()
+	}
+
+	quadrantCountProduct := 1
+	for _, count := range quadrantCounts {
+		quadrantCountProduct *= count
+	}
+
+	return quadrantCountProduct, nil
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
