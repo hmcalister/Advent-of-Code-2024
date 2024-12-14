@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	hashset "github.com/hmcalister/Go-DSA/set/HashSet"
 )
 
 const (
@@ -171,5 +173,56 @@ func Part01(fileScanner *bufio.Scanner) (int, error) {
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
+	if !fileScanner.Scan() {
+		slog.Error("no input found")
+		return 0, errors.New("no input found")
+	}
+	gridSizeLine := fileScanner.Text()
+	gridSizeStrs := strings.Split(gridSizeLine, ",")
+	if len(gridSizeStrs) != 2 {
+		slog.Error("did not find an initial line with format x,y for grid size", "line", gridSizeLine, "split line", gridSizeStrs)
+		return 0, errors.New("grid size line does not match expected format x,y")
+	}
+	gridX, gridXErr := strconv.Atoi(gridSizeStrs[0])
+	gridY, gridYErr := strconv.Atoi(gridSizeStrs[1])
+	if errors.Join(gridXErr, gridYErr) != nil {
+		slog.Error("could not parse grid line to integers", "line", gridSizeLine, "grid size strs", gridSizeStrs)
+		return 0, errors.New("grid size line does not contain integers")
+	}
+
+	robots := parseInputToRobots(fileScanner)
+	// slog.Debug("parsed input", "gridX", gridX, "gridY", gridY, "robots", robots)
+
+	keyboardScanner := bufio.NewScanner(os.Stdin)
+
+	for stepIndex := 0; stepIndex < 10000; stepIndex += 1 {
+		robotInCoordinate := hashset.New[robot.Vector2]()
+		toPrint := true
+		for _, robot := range robots {
+			nextPosition := robot.ComputePosition(gridX, gridY, stepIndex)
+			if robotInCoordinate.Contains(nextPosition) {
+				toPrint = false
+			}
+			robotInCoordinate.Add(nextPosition)
+			// slog.Debug("robot stepped", "robot", *robot, "next position", nextPosition, "updated quadrant counts", quadrantCounts)
+		}
+
+		if toPrint {
+			fmt.Printf("\n\nStep Index: %v\n", stepIndex)
+			for y := 0; y < gridY; y += 1 {
+				for x := 0; x < gridX; x += 1 {
+					coordinate := robot.Vector2{X: x, Y: y}
+					if robotInCoordinate.Contains(coordinate) {
+						fmt.Print("#")
+					} else {
+						fmt.Print(".")
+					}
+				}
+				fmt.Println()
+			}
+			keyboardScanner.Scan()
+		}
+	}
+
 	return 0, nil
 }
