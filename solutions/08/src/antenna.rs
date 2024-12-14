@@ -81,7 +81,8 @@ impl AntennaMap {
                         debug!("antinode coordinate" = ?potential_antinode, "found antinode");
                         valid_antinodes.insert(potential_antinode);
                     }
-
+                    
+                    // Ordering (second, first)
                     let position_delta = second_antenna_position.subtract_coordinate(first_antenna_position);
                     let potential_antinode = second_antenna_position.add_coordinate(position_delta);
                     if self.check_coordinate_inbounds(potential_antinode) {
@@ -94,4 +95,43 @@ impl AntennaMap {
 
         valid_antinodes.len() as i64
     }
+
+    pub fn count_all_antinodes(&self) -> i64 {
+        let mut valid_antinodes = HashSet::new();
+
+        for freq in &self.antenna_frequency_list {
+            let _span = span!(Level::DEBUG, "finding first order antinodes", "antenna frequency"=?freq).entered();
+            let antenna_positions = self.antenna_positions_by_frequency.get(&freq).unwrap();
+
+            for first_antenna_index in 0..antenna_positions.len() {
+                let first_antenna_position = antenna_positions[first_antenna_index];
+                
+                // Insert antinode that exists on current antenna
+                valid_antinodes.insert(first_antenna_position);
+                for second_antenna_index in first_antenna_index+1..antenna_positions.len() {
+                    let second_antenna_position = antenna_positions[second_antenna_index];
+
+                    // Ordering (first, second)
+                    let position_delta = first_antenna_position.subtract_coordinate(second_antenna_position);
+                    let mut potential_antinode = first_antenna_position.add_coordinate(position_delta);
+                    while self.check_coordinate_inbounds(potential_antinode) {
+                        debug!("antinode coordinate" = ?potential_antinode, "found antinode");
+                        valid_antinodes.insert(potential_antinode);
+                        potential_antinode = potential_antinode.add_coordinate(position_delta);
+                    }
+
+                    let position_delta = second_antenna_position.subtract_coordinate(first_antenna_position);
+                    let mut potential_antinode = second_antenna_position.add_coordinate(position_delta);
+                    while self.check_coordinate_inbounds(potential_antinode) {
+                        debug!("antinode coordinate" = ?potential_antinode, "found antinode");
+                        valid_antinodes.insert(potential_antinode);
+                        potential_antinode = potential_antinode.add_coordinate(position_delta);
+                    }
+                }
+            }
+        }
+
+        valid_antinodes.len() as i64
+    }
+
 }
