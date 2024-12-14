@@ -7,6 +7,7 @@ use std::time::SystemTime;
 use tracing::{debug, error, info, trace};
 
 mod logging;
+mod antenna;
 
 /// Program to solve Advent of Code puzzles
 #[derive(Parser, Debug)]
@@ -46,12 +47,10 @@ fn main() {
 }
 
 fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
-    for line_result in input_file_reader.lines() {
-        let line = line_result.unwrap();
-        debug!("line" = line, "read line from input file");
-    }
+    let antenna_map = antenna::new_antenna_map(input_file_reader).expect("could not parse antenna map");
+    debug!(?antenna_map, "parsed antenna map");
 
-    None
+    Some(antenna_map.count_first_order_antinodes())
 }
 
 fn part02(input_file_reader: BufReader<File>) -> Option<i64> {
