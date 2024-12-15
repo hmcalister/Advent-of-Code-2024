@@ -51,3 +51,29 @@ func NewWarehouseMap(warehouseMapStrs []string) *WarehouseMap {
 	return warehouse
 }
 
+func (warehouse *WarehouseMap) String() string {
+	s := make([]rune, warehouse.mapHeight*(warehouse.mapWidth+1))
+
+	currentStrIndex := 0
+	for y := 0; y < warehouse.mapHeight; y += 1 {
+		for x := 0; x < warehouse.mapWidth; x += 1 {
+			coord := gridutils.Coordinate{X: x, Y: y}
+
+			if warehouse.robotPosition.Equal(coord) {
+				s[currentStrIndex] = ROBOT_RUNE
+			} else if warehouse.wallMap.Contains(coord) {
+				s[currentStrIndex] = WALL_RUNE
+			} else if warehouse.boxMap.Contains(coord) {
+				s[currentStrIndex] = BOX_RUNE
+			} else {
+				s[currentStrIndex] = EMPTY_RUNE
+			}
+			currentStrIndex += 1
+		}
+		s[currentStrIndex] = '\n'
+		currentStrIndex += 1
+	}
+
+	return string(s)
+}
+
