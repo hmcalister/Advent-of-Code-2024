@@ -78,7 +78,7 @@ func Part01(fileScanner *bufio.Scanner) (int, error) {
 		}
 		warehouseMapStrs = append(warehouseMapStrs, line)
 	}
-	warehouseMap := warehouse.NewWarehouseMap(warehouseMapStrs)
+	warehouseMap := warehouse.NewSingleWidthWarehouseMap(warehouseMapStrs)
 	fmt.Println(warehouseMap)
 
 	var robotStepDirection gridutils.Direction
