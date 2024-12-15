@@ -49,8 +49,16 @@ func NewDoubleWidthWarehouseMap(warehouseMapStrs []string) *DoubleWidthWarehouse
 	return warehouse
 }
 
+func (warehouse *DoubleWidthWarehouseMap) Width() int {
+	return warehouse.mapWidth
+}
+
+func (warehouse *DoubleWidthWarehouseMap) Height() int {
+	return warehouse.mapHeight
+}
+
 func (warehouse *DoubleWidthWarehouseMap) String() string {
-	s := make([]rune, warehouse.mapHeight*(warehouse.mapWidth+1)+10)
+	s := make([]rune, warehouse.mapHeight*(warehouse.mapWidth+1))
 
 	currentStrIndex := 0
 	for y := 0; y < warehouse.mapHeight; y += 1 {
@@ -58,12 +66,12 @@ func (warehouse *DoubleWidthWarehouseMap) String() string {
 			coord := gridutils.Coordinate{X: x, Y: y}
 
 			if warehouse.robotPosition.Equal(coord) {
-				copy(s[currentStrIndex:], []rune("\033[32m"))
-				currentStrIndex += 5
+				// copy(s[currentStrIndex:], []rune("\033[32m"))
+				// currentStrIndex += 5
 				s[currentStrIndex] = ROBOT_RUNE
-				currentStrIndex += 1
-				copy(s[currentStrIndex:], []rune("\033[0m"))
-				currentStrIndex += 4
+				// currentStrIndex += 1
+				// copy(s[currentStrIndex:], []rune("\033[0m"))
+				// currentStrIndex += 4
 			} else if warehouse.wallMap.Contains(coord) {
 				s[currentStrIndex] = WALL_RUNE
 			} else if warehouse.boxMap.Contains(coord) {

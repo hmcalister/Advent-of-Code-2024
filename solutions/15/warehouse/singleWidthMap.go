@@ -44,6 +44,14 @@ func NewSingleWidthWarehouseMap(warehouseMapStrs []string) *SingleWidthWarehouse
 	return warehouse
 }
 
+func (warehouse *SingleWidthWarehouseMap) Width() int {
+	return warehouse.mapWidth
+}
+
+func (warehouse *SingleWidthWarehouseMap) Height() int {
+	return warehouse.mapHeight
+}
+
 func (warehouse *SingleWidthWarehouseMap) String() string {
 	s := make([]rune, warehouse.mapHeight*(warehouse.mapWidth+1))
 
