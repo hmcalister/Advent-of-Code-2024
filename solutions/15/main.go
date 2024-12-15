@@ -2,7 +2,11 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"flag"
+	"fmt"
+	"hmcalister/AdventOfCode/gridutils"
+	"hmcalister/AdventOfCode/warehouse"
 	"log/slog"
 	"os"
 	"runtime/pprof"
@@ -66,7 +70,41 @@ func main() {
 }
 
 func Part01(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	warehouseMapStrs := make([]string, 0)
+	for fileScanner.Scan() {
+		line := fileScanner.Text()
+		if len(line) == 0 {
+			break
+		}
+		warehouseMapStrs = append(warehouseMapStrs, line)
+	}
+	warehouseMap := warehouse.NewWarehouseMap(warehouseMapStrs)
+	fmt.Println(warehouseMap)
+
+	var robotStepDirection gridutils.Direction
+	for fileScanner.Scan() {
+		line := fileScanner.Text()
+		for _, robotStepDirectionRune := range line {
+			switch robotStepDirectionRune {
+			case '^':
+				robotStepDirection = gridutils.DIRECTION_UP
+			case '>':
+				robotStepDirection = gridutils.DIRECTION_RIGHT
+			case 'v':
+				robotStepDirection = gridutils.DIRECTION_DOWN
+			case '<':
+				robotStepDirection = gridutils.DIRECTION_LEFT
+			default:
+				slog.Error("unexpected robot direction encountered", "rune found", robotStepDirectionRune)
+				return 0, errors.New("could not parse robot direction input")
+			}
+			slog.Debug("robot moving", "rune found", robotStepDirectionRune, "robot direction", robotStepDirection)
+			warehouseMap.RobotStep(robotStepDirection)
+			// fmt.Println(warehouseMap)
+		}
+	}
+
+	return warehouseMap.ComputeGPS(), nil
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
