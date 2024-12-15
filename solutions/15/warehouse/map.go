@@ -77,3 +77,48 @@ func (warehouse *WarehouseMap) String() string {
 	return string(s)
 }
 
+func (warehouse *WarehouseMap) RobotStep(stepDirection gridutils.Direction) {
+	proposedRobotPosition := warehouse.robotPosition.Step(stepDirection)
+
+	// If robot is trying to walk into a wall: don't
+	if warehouse.wallMap.Contains(proposedRobotPosition) {
+		return
+	}
+
+	// If robot is moving into a box, just move the robot
+	if !warehouse.boxMap.Contains(proposedRobotPosition) {
+		warehouse.robotPosition = proposedRobotPosition
+		return
+	}
+
+	// Robot is moving into a box
+	// Find the last box in the line of boxes --- the robot can push them all
+	//
+	// E.g. if we have this robot moving right:
+	//					      @OOOOOO.#
+	// We need to find this position ^
+	lastBoxPosition := proposedRobotPosition
+	for {
+		lastBoxPosition = lastBoxPosition.Step(stepDirection)
+
+		// Logically, in Euclidean space, the box line cannot intersect the robot, so don't check for this
+
+		// If box line ends with a wall we cannot push the boxes
+		if warehouse.wallMap.Contains(lastBoxPosition) {
+			return
+		}
+
+		// If box line ends with empty space we can push the boxes over
+		if !warehouse.boxMap.Contains(lastBoxPosition) {
+			break
+		}
+	}
+
+	// lastBoxPosition now holds the coordinate of the first (empty) space after the boxes
+	// Simply delete the first box (at proposedRobotPosition) and insert one at the empty space (lastBoxPosition)
+
+	warehouse.boxMap.Remove(proposedRobotPosition)
+	warehouse.boxMap.Add(lastBoxPosition)
+	warehouse.robotPosition = proposedRobotPosition
+}
+
