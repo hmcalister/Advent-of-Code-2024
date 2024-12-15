@@ -7,14 +7,7 @@ import (
 	hashset "github.com/hmcalister/Go-DSA/set/HashSet"
 )
 
-const (
-	WALL_RUNE  rune = '#'
-	BOX_RUNE   rune = 'O'
-	ROBOT_RUNE rune = '@'
-	EMPTY_RUNE rune = '.'
-)
-
-type WarehouseMap struct {
+type SingleWidthWarehouseMap struct {
 	wallMap       *hashset.HashSet[gridutils.Coordinate]
 	boxMap        *hashset.HashSet[gridutils.Coordinate]
 	robotPosition gridutils.Coordinate
@@ -22,8 +15,8 @@ type WarehouseMap struct {
 	mapHeight     int
 }
 
-func NewWarehouseMap(warehouseMapStrs []string) *WarehouseMap {
-	warehouse := &WarehouseMap{
+func NewSingleWidthWarehouseMap(warehouseMapStrs []string) *SingleWidthWarehouseMap {
+	warehouse := &SingleWidthWarehouseMap{
 		wallMap:   hashset.New[gridutils.Coordinate](),
 		boxMap:    hashset.New[gridutils.Coordinate](),
 		mapWidth:  len(warehouseMapStrs[0]),
@@ -51,7 +44,7 @@ func NewWarehouseMap(warehouseMapStrs []string) *WarehouseMap {
 	return warehouse
 }
 
-func (warehouse *WarehouseMap) String() string {
+func (warehouse *SingleWidthWarehouseMap) String() string {
 	s := make([]rune, warehouse.mapHeight*(warehouse.mapWidth+1))
 
 	currentStrIndex := 0
@@ -77,7 +70,7 @@ func (warehouse *WarehouseMap) String() string {
 	return string(s)
 }
 
-func (warehouse *WarehouseMap) RobotStep(stepDirection gridutils.Direction) {
+func (warehouse *SingleWidthWarehouseMap) RobotStep(stepDirection gridutils.Direction) {
 	proposedRobotPosition := warehouse.robotPosition.Step(stepDirection)
 
 	// If robot is trying to walk into a wall: don't
@@ -85,7 +78,7 @@ func (warehouse *WarehouseMap) RobotStep(stepDirection gridutils.Direction) {
 		return
 	}
 
-	// If robot is moving into a box, just move the robot
+	// If robot is not moving into a box, just move the robot
 	if !warehouse.boxMap.Contains(proposedRobotPosition) {
 		warehouse.robotPosition = proposedRobotPosition
 		return
@@ -122,7 +115,7 @@ func (warehouse *WarehouseMap) RobotStep(stepDirection gridutils.Direction) {
 	warehouse.robotPosition = proposedRobotPosition
 }
 
-func (warehouse *WarehouseMap) ComputeGPS() int {
+func (warehouse *SingleWidthWarehouseMap) ComputeGPS() int {
 	totalGps := 0
 	for boxPosition := range warehouse.boxMap.Iterator() {
 		currentGps := 100*boxPosition.Y + boxPosition.X
