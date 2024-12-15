@@ -122,3 +122,12 @@ func (warehouse *WarehouseMap) RobotStep(stepDirection gridutils.Direction) {
 	warehouse.robotPosition = proposedRobotPosition
 }
 
+func (warehouse *WarehouseMap) ComputeGPS() int {
+	totalGps := 0
+	for boxPosition := range warehouse.boxMap.Iterator() {
+		currentGps := 100*boxPosition.Y + boxPosition.X
+		totalGps += currentGps
+		slog.Debug("computing box gps", "box position", boxPosition, "gps", currentGps, "updated total gps", totalGps)
+	}
+	return totalGps
+}
