@@ -1,2 +1,4 @@
 github.com/hmcalister/Go-DSA v1.2.0 h1:lHbHeVFRboINLp7svWzOELHUERhOnqyozTvqAkfDNTE=
 github.com/hmcalister/Go-DSA v1.2.0/go.mod h1:5OEIIZBQibo5oi9nVfFh3BcCKqRx7omKMyGZdH014Qs=
+golang.org/x/image v0.23.0 h1:HseQ7c2OpPKTPVzNjG5fwJsOTCiiwS4QdsYi5XU6H68=
+golang.org/x/image v0.23.0/go.mod h1:wJJBTdLfCCf3tiHa1fNxpZmUI4mmoZvwMCPP0ddoNKY=
