@@ -7,9 +7,14 @@ import (
 	"fmt"
 	"hmcalister/AdventOfCode/gridutils"
 	"hmcalister/AdventOfCode/warehouse"
+	"image"
+	"image/color"
+	"image/draw"
+	"image/gif"
 	"log/slog"
 	"os"
 	"runtime/pprof"
+	"strings"
 	"time"
 )
 
@@ -81,6 +86,7 @@ func Part01(fileScanner *bufio.Scanner) (int, error) {
 	warehouseMap := warehouse.NewSingleWidthWarehouseMap(warehouseMapStrs)
 	fmt.Println(warehouseMap)
 
+	frames := make([]string, 0)
 	var robotStepDirection gridutils.Direction
 	for fileScanner.Scan() {
 		line := fileScanner.Text()
@@ -100,10 +106,11 @@ func Part01(fileScanner *bufio.Scanner) (int, error) {
 			}
 			slog.Debug("robot moving", "rune found", robotStepDirectionRune, "robot direction", robotStepDirection)
 			warehouseMap.RobotStep(robotStepDirection)
-			// fmt.Println(warehouseMap)
+			frames = append(frames, warehouseMap.String())
 		}
 	}
 
+	createGIF(frames, "part01.gif", 12)
 	return warehouseMap.ComputeGPS(), nil
 }
 
@@ -119,6 +126,7 @@ func Part02(fileScanner *bufio.Scanner) (int, error) {
 	warehouseMap := warehouse.NewDoubleWidthWarehouseMap(warehouseMapStrs)
 	fmt.Println(warehouseMap)
 
+	frames := make([]string, 0)
 	var robotStepDirection gridutils.Direction
 	for fileScanner.Scan() {
 		line := fileScanner.Text()
@@ -138,9 +146,100 @@ func Part02(fileScanner *bufio.Scanner) (int, error) {
 			}
 			slog.Debug("robot moving", "rune found", robotStepDirectionRune, "robot direction", robotStepDirection)
 			warehouseMap.RobotStep(robotStepDirection)
-			// fmt.Println(warehouseMap)
+			frames = append(frames, warehouseMap.String())
 		}
 	}
 
+	createGIF(frames, "part02.gif", 12)
 	return warehouseMap.ComputeGPS(), nil
+}
+
+// Turn the warehouse map string into an image
+func stringToImage(s string) *image.Paletted {
+	cellSize := 32
+	borderWidth := 4
+	backgroundColor := color.RGBA{255, 255, 255, 255}
+	wallColor := color.RGBA{0, 0, 0, 255}
+	boxBorderColor := color.RGBA{96, 96, 96, 255}
+	boxColor := color.RGBA{128, 128, 128, 255}
+	robotColor := color.RGBA{128, 196, 128, 255}
+
+	lines := strings.Split(s, "\n")
+
+	img := image.NewRGBA(
+		image.Rect(
+			0,
+			0,
+			cellSize*len(lines[0]),
+			cellSize*(len(lines)-1),
+		),
+	)
+	draw.Draw(img, img.Bounds(), &image.Uniform{backgroundColor}, image.Point{}, draw.Src)
+
+	for y, line := range lines {
+		for x, cell := range line {
+			var currentCellColor color.RGBA
+			switch cell {
+			case warehouse.ROBOT_RUNE:
+				currentCellColor = robotColor
+			case warehouse.WALL_RUNE:
+				currentCellColor = wallColor
+			case warehouse.BOX_RUNE:
+				currentCellColor = boxColor
+			case '[':
+				// DUAL BOX!!!
+				currentCellColor = boxColor
+				borderRect := image.Rect(
+					cellSize*x,
+					cellSize*y,
+					cellSize*(x+2),
+					cellSize*(y+1),
+				)
+				draw.Draw(img, borderRect, &image.Uniform{boxBorderColor}, image.Point{}, draw.Src)
+				cellRect := image.Rect(
+					cellSize*x+borderWidth,
+					cellSize*y+borderWidth,
+					cellSize*(x+2)-borderWidth,
+					cellSize*(y+1)-borderWidth,
+				)
+				draw.Draw(img, cellRect, &image.Uniform{boxColor}, image.Point{}, draw.Src)
+				continue
+			case ']':
+				continue
+			default:
+				currentCellColor = backgroundColor
+			}
+			cellRect := image.Rect(cellSize*x, cellSize*y, cellSize*(x+1), cellSize*(y+1))
+			draw.Draw(img, cellRect, &image.Uniform{currentCellColor}, image.Point{}, draw.Src)
+		}
+	}
+
+	pal := []color.Color{backgroundColor, wallColor, boxColor, boxBorderColor, robotColor}
+	palettedImg := image.NewPaletted(img.Bounds(), pal)
+	draw.FloydSteinberg.Draw(palettedImg, img.Bounds(), img, image.Point{})
+
+	return palettedImg
+}
+
+func createGIF(frameStrings []string, outputFilePath string, delay int) error {
+	frames := make([]*image.Paletted, 0)
+	delays := make([]int, 0)
+
+	for frameIndex, frameString := range frameStrings {
+		slog.Debug("converting frame", "frame index", frameIndex, "total frames", len(frameStrings))
+		img := stringToImage(frameString)
+		frames = append(frames, img)
+		delays = append(delays, delay)
+	}
+
+	f, err := os.Create(outputFilePath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	return gif.EncodeAll(f, &gif.GIF{
+		Image: frames,
+		Delay: delays,
+	})
 }
