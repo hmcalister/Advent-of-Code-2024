@@ -6,7 +6,6 @@ import (
 	"hmcalister/AdventOfCode/gridutils"
 	"log/slog"
 	"math"
-	"slices"
 
 	priorityqueue "github.com/hmcalister/Go-DSA/queue/PriorityQueue"
 	hashset "github.com/hmcalister/Go-DSA/set/HashSet"
@@ -101,11 +100,11 @@ func (maze Maze) expandStep(
 			cameFrom[forwardStep] = step
 			maze.gScore[forwardStep] = forwardGScoreViaCurrent
 			maze.fScore[forwardStep] = forwardGScoreViaCurrent + maze.heuristic(forwardStep)
-		}
-		if _, err := openset.Find(func(item pathfindStepData) bool {
-			return item == forwardStep
-		}); err != nil {
-			openset.Add(forwardStep)
+			if _, err := openset.Find(func(item pathfindStepData) bool {
+				return item == forwardStep
+			}); err != nil {
+				openset.Add(forwardStep)
+			}
 		}
 	}
 
@@ -122,11 +121,11 @@ func (maze Maze) expandStep(
 			cameFrom[leftStep] = step
 			maze.gScore[leftStep] = forwardGScoreViaCurrent
 			maze.fScore[leftStep] = forwardGScoreViaCurrent + maze.heuristic(leftStep)
-		}
-		if _, err := openset.Find(func(item pathfindStepData) bool {
-			return item == leftStep
-		}); err != nil {
-			openset.Add(leftStep)
+			if _, err := openset.Find(func(item pathfindStepData) bool {
+				return item == leftStep
+			}); err != nil {
+				openset.Add(leftStep)
+			}
 		}
 	}
 
@@ -143,11 +142,11 @@ func (maze Maze) expandStep(
 			cameFrom[rightStep] = step
 			maze.gScore[rightStep] = forwardGScoreViaCurrent
 			maze.fScore[rightStep] = forwardGScoreViaCurrent + maze.heuristic(rightStep)
-		}
-		if _, err := openset.Find(func(item pathfindStepData) bool {
-			return item == rightStep
-		}); err != nil {
-			openset.Add(rightStep)
+			if _, err := openset.Find(func(item pathfindStepData) bool {
+				return item == rightStep
+			}); err != nil {
+				openset.Add(rightStep)
+			}
 		}
 	}
 }
@@ -202,37 +201,26 @@ func (maze Maze) ComputeOptimalPath() (int, error) {
 	openset := priorityqueue.New(pathfindStepComparator)
 	cameFrom := make(map[pathfindStepData]pathfindStepData)
 
-	// Handle first steps manually
-	for _, direction := range []gridutils.Direction{gridutils.DIRECTION_UP, gridutils.DIRECTION_RIGHT, gridutils.DIRECTION_DOWN, gridutils.DIRECTION_LEFT} {
-		firstStepPosition := maze.startPosition.Step(direction)
-		if maze.coordinateMap.Contains(firstStepPosition) {
-			firstStep := pathfindStepData{
-				position:          firstStepPosition,
-				incomingDirection: direction,
-			}
-			slog.Debug("found valid first step", "first step", firstStep)
-			maze.gScore[firstStep] = 1
-			maze.fScore[firstStep] = 1 + maze.heuristic(firstStep)
-			openset.Add(firstStep)
-			cameFrom[firstStep] = pathfindStepData{
-				position:          maze.startPosition,
-				incomingDirection: direction,
-			}
-		}
+	initialPosition := pathfindStepData{
+		position:          maze.startPosition,
+		incomingDirection: gridutils.DIRECTION_RIGHT,
 	}
+	maze.gScore[initialPosition] = 0
+	maze.fScore[initialPosition] = maze.heuristic(initialPosition)
+	openset.Add(initialPosition)
 
 	for openset.Size() > 0 {
 		currentStep, _ := openset.Remove()
 		// slog.Debug("expanding node", "current step", currentStep)
 		currentGScore := maze.getGScore(currentStep)
 
-		queueData := openset.Items()
-		slices.SortFunc(queueData, pathfindStepComparator)
-		fmt.Printf("Next Item: %+v (g=%+v, f=%+v)\n", currentStep, maze.getGScore(currentStep), maze.getFScore(currentStep))
-		for index, item := range queueData {
-			fmt.Printf("\t%v: %+v (g=%+v, f=%+v)\n", index, item, maze.getGScore(item), maze.getFScore(item))
-		}
-		fmt.Println()
+		// queueData := openset.Items()
+		// slices.SortFunc(queueData, pathfindStepComparator)
+		// fmt.Printf("Next Item: %+v (g=%+v, f=%+v)\n", currentStep, maze.getGScore(currentStep), maze.getFScore(currentStep))
+		// for index, item := range queueData {
+		// 	fmt.Printf("\t%v: %+v (g=%+v, f=%+v)\n", index, item, maze.getGScore(item), maze.getFScore(item))
+		// }
+		// fmt.Println()
 
 		if currentStep.position.Equal(maze.endPosition) {
 			maze.reconstructPath(currentStep, cameFrom)
