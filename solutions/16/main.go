@@ -77,5 +77,11 @@ func Part01(fileScanner *bufio.Scanner) (int, error) {
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	mazeStrs := make([]string, 0)
+	for fileScanner.Scan() {
+		mazeStrs = append(mazeStrs, fileScanner.Text())
+	}
+	maze := maze.NewMaze(mazeStrs)
+
+	return maze.ComputeCoordinatesOnAnyOptimalPath()
 }
