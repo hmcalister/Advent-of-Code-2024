@@ -211,16 +211,8 @@ func (maze Maze) ComputeOptimalPath() (int, error) {
 
 	for openset.Size() > 0 {
 		currentStep, _ := openset.Remove()
-		// slog.Debug("expanding node", "current step", currentStep)
+		slog.Debug("expanding node", "current step", currentStep)
 		currentGScore := maze.getGScore(currentStep)
-
-		// queueData := openset.Items()
-		// slices.SortFunc(queueData, pathfindStepComparator)
-		// fmt.Printf("Next Item: %+v (g=%+v, f=%+v)\n", currentStep, maze.getGScore(currentStep), maze.getFScore(currentStep))
-		// for index, item := range queueData {
-		// 	fmt.Printf("\t%v: %+v (g=%+v, f=%+v)\n", index, item, maze.getGScore(item), maze.getFScore(item))
-		// }
-		// fmt.Println()
 
 		if currentStep.position.Equal(maze.endPosition) {
 			maze.reconstructPath(currentStep, cameFrom)
