@@ -155,7 +155,94 @@ func (maze Maze) expandStepSingleOptimalPath(
 	}
 }
 
-func (maze Maze) reconstructPath(finalStep pathfindStepData, cameFrom map[pathfindStepData]pathfindStepData) {
+func (maze Maze) expandStepAllOptimalPaths(
+	step pathfindStepData,
+	openset *priorityqueue.PriorityQueue[pathfindStepData],
+	cameFrom map[pathfindStepData][]pathfindStepData,
+) {
+	stepGScore := maze.getGScore(step)
+
+	forwardCoord := step.position.Step(step.incomingDirection)
+	if maze.coordinateMap.Contains(forwardCoord) {
+		forwardStep := pathfindStepData{
+			position:          forwardCoord,
+			incomingDirection: step.incomingDirection,
+		}
+		forwardGScoreViaCurrent := stepGScore + 1
+		forwardGScorePrior := maze.getGScore(forwardStep)
+		if forwardGScoreViaCurrent == forwardGScorePrior {
+			// append the paths if we are JUST AS GOOD
+			cameFrom[forwardStep] = append(cameFrom[forwardStep], step)
+		}
+		if forwardGScoreViaCurrent < forwardGScorePrior {
+			slog.Debug("expanded better path to forward neighbor", "current step", step, "forward step", forwardStep, "forward g", forwardGScoreViaCurrent)
+			// overwrite the paths if we have done STRICTLY better
+			cameFrom[forwardStep] = []pathfindStepData{step}
+			maze.gScore[forwardStep] = forwardGScoreViaCurrent
+			maze.fScore[forwardStep] = forwardGScoreViaCurrent + maze.heuristic(forwardStep)
+			if _, err := openset.Find(func(item pathfindStepData) bool {
+				return item == forwardStep
+			}); err != nil {
+				openset.Add(forwardStep)
+			}
+		}
+	}
+
+	leftDirection := step.incomingDirection.RotateLeft()
+	leftCoord := step.position.Step(leftDirection)
+	if maze.coordinateMap.Contains(leftCoord) {
+		leftStep := pathfindStepData{
+			position:          leftCoord,
+			incomingDirection: leftDirection,
+		}
+		leftGScoreViaCurrent := stepGScore + 1001
+		leftGScorePrior := maze.getGScore(leftStep)
+		if leftGScoreViaCurrent == leftGScorePrior {
+			// append the paths if we are JUST AS GOOD
+			cameFrom[leftStep] = append(cameFrom[leftStep], step)
+		}
+		if leftGScoreViaCurrent < leftGScorePrior {
+			slog.Debug("expanded better path to left neighbor", "current step", step, "left step", leftStep, "left g", leftGScoreViaCurrent)
+			// overwrite the paths if we have done STRICTLY better
+			cameFrom[leftStep] = []pathfindStepData{step}
+			maze.gScore[leftStep] = leftGScoreViaCurrent
+			maze.fScore[leftStep] = leftGScoreViaCurrent + maze.heuristic(leftStep)
+			if _, err := openset.Find(func(item pathfindStepData) bool {
+				return item == leftStep
+			}); err != nil {
+				openset.Add(leftStep)
+			}
+		}
+	}
+
+	rightDirection := step.incomingDirection.RotateRight()
+	rightCoord := step.position.Step(rightDirection)
+	if maze.coordinateMap.Contains(rightCoord) {
+		rightStep := pathfindStepData{
+			position:          rightCoord,
+			incomingDirection: rightDirection,
+		}
+		rightGScoreViaCurrent := stepGScore + 1001
+		rightGScorePrior := maze.getGScore(rightStep)
+		if rightGScoreViaCurrent == rightGScorePrior {
+			// append the paths if we are JUST AS GOOD
+			cameFrom[rightStep] = append(cameFrom[rightStep], step)
+		}
+		if rightGScoreViaCurrent < rightGScorePrior {
+			slog.Debug("expanded better path to right neighbor", "current step", step, "right step", rightStep, "right g", rightGScoreViaCurrent)
+			// overwrite the paths if we have done STRICTLY better
+			cameFrom[rightStep] = []pathfindStepData{step}
+			maze.gScore[rightStep] = rightGScoreViaCurrent
+			maze.fScore[rightStep] = rightGScoreViaCurrent + maze.heuristic(rightStep)
+			if _, err := openset.Find(func(item pathfindStepData) bool {
+				return item == rightStep
+			}); err != nil {
+				openset.Add(rightStep)
+			}
+		}
+	}
+}
+
 	completePathSteps := make(map[gridutils.Coordinate]pathfindStepData)
 	reconstructedStep := finalStep
 	for reconstructedStep.position != maze.startPosition {
