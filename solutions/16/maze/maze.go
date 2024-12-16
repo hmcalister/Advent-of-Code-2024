@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"math"
 
+	arrayqueue "github.com/hmcalister/Go-DSA/queue/ArrayQueue"
 	priorityqueue "github.com/hmcalister/Go-DSA/queue/PriorityQueue"
 	hashset "github.com/hmcalister/Go-DSA/set/HashSet"
 )
@@ -81,7 +82,7 @@ func (maze Maze) getFScore(step pathfindStepData) int {
 	return math.MaxInt
 }
 
-func (maze Maze) expandStep(
+func (maze Maze) expandStepSingleOptimalPath(
 	step pathfindStepData,
 	openset *priorityqueue.PriorityQueue[pathfindStepData],
 	cameFrom map[pathfindStepData]pathfindStepData,
@@ -97,6 +98,7 @@ func (maze Maze) expandStep(
 		forwardGScoreViaCurrent := stepGScore + 1
 		forwardGScorePrior := maze.getGScore(forwardStep)
 		if forwardGScoreViaCurrent < forwardGScorePrior {
+			slog.Debug("expanded better path to forward neighbor", "current step", step, "forward step", forwardStep, "forward g", forwardGScoreViaCurrent)
 			cameFrom[forwardStep] = step
 			maze.gScore[forwardStep] = forwardGScoreViaCurrent
 			maze.fScore[forwardStep] = forwardGScoreViaCurrent + maze.heuristic(forwardStep)
@@ -115,12 +117,13 @@ func (maze Maze) expandStep(
 			position:          leftCoord,
 			incomingDirection: leftDirection,
 		}
-		forwardGScoreViaCurrent := stepGScore + 1001
-		forwardGScorePrior := maze.getGScore(leftStep)
-		if forwardGScoreViaCurrent < forwardGScorePrior {
+		leftGScoreViaCurrent := stepGScore + 1001
+		leftGScorePrior := maze.getGScore(leftStep)
+		if leftGScoreViaCurrent < leftGScorePrior {
+			slog.Debug("expanded better path to left neighbor", "current step", step, "left step", leftStep, "left g", leftGScoreViaCurrent)
 			cameFrom[leftStep] = step
-			maze.gScore[leftStep] = forwardGScoreViaCurrent
-			maze.fScore[leftStep] = forwardGScoreViaCurrent + maze.heuristic(leftStep)
+			maze.gScore[leftStep] = leftGScoreViaCurrent
+			maze.fScore[leftStep] = leftGScoreViaCurrent + maze.heuristic(leftStep)
 			if _, err := openset.Find(func(item pathfindStepData) bool {
 				return item == leftStep
 			}); err != nil {
@@ -136,12 +139,13 @@ func (maze Maze) expandStep(
 			position:          rightCoord,
 			incomingDirection: rightDirection,
 		}
-		forwardGScoreViaCurrent := stepGScore + 1001
-		forwardGScorePrior := maze.getGScore(rightStep)
-		if forwardGScoreViaCurrent < forwardGScorePrior {
+		rightGScoreViaCurrent := stepGScore + 1001
+		rightGScorePrior := maze.getGScore(rightStep)
+		if rightGScoreViaCurrent < rightGScorePrior {
+			slog.Debug("expanded better path to right neighbor", "current step", step, "right step", rightStep, "right g", rightGScoreViaCurrent)
 			cameFrom[rightStep] = step
-			maze.gScore[rightStep] = forwardGScoreViaCurrent
-			maze.fScore[rightStep] = forwardGScoreViaCurrent + maze.heuristic(rightStep)
+			maze.gScore[rightStep] = rightGScoreViaCurrent
+			maze.fScore[rightStep] = rightGScoreViaCurrent + maze.heuristic(rightStep)
 			if _, err := openset.Find(func(item pathfindStepData) bool {
 				return item == rightStep
 			}); err != nil {
