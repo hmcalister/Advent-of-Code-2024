@@ -284,6 +284,27 @@ func (maze Maze) printOptimalPath(finalStep pathfindStepData, cameFrom map[pathf
 	fmt.Println(string(mazeString))
 }
 
+func (maze Maze) printCoordinatesOnAnyOptimalPath(coordinatesOnAnyOptimalPath *hashset.HashSet[gridutils.Coordinate]) {
+	mazeString := make([]rune, maze.mazeHeight*(maze.mazeWidth+1))
+	mazeStringIndex := 0
+	for y := 0; y < maze.mazeHeight; y += 1 {
+		for x := 0; x < maze.mazeWidth; x += 1 {
+			c := gridutils.Coordinate{X: x, Y: y}
+			if coordinatesOnAnyOptimalPath.Contains(c) {
+				mazeString[mazeStringIndex] = 'O'
+			} else if !maze.coordinateMap.Contains(c) {
+				mazeString[mazeStringIndex] = WALL_RUNE
+			} else {
+				mazeString[mazeStringIndex] = ' '
+			}
+			mazeStringIndex += 1
+		}
+		mazeString[mazeStringIndex] = '\n'
+		mazeStringIndex += 1
+	}
+	fmt.Println(string(mazeString))
+}
+
 // Find the optimal path using A* pathfinding
 func (maze Maze) ComputeOptimalPath() (int, error) {
 	pathfindStepComparator := func(a, b pathfindStepData) int {
