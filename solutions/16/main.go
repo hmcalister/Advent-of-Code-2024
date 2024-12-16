@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"flag"
+	"hmcalister/AdventOfCode/maze"
 	"log/slog"
 	"os"
 	"runtime/pprof"
@@ -66,7 +67,13 @@ func main() {
 }
 
 func Part01(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	mazeStrs := make([]string, 0)
+	for fileScanner.Scan() {
+		mazeStrs = append(mazeStrs, fileScanner.Text())
+	}
+	maze := maze.NewMaze(mazeStrs)
+
+	return maze.ComputeOptimalPath()
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
