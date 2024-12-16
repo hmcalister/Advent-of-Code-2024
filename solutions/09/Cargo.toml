@@ -7,3 +7,6 @@ edition = "2021"
 clap = { version = "4.5.23", features = ["derive"] }
 tracing = "0.1.41"
 tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+
+[profile.release]
+debug = true
