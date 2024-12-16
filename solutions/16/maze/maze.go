@@ -324,15 +324,76 @@ func (maze Maze) ComputeOptimalPath() (int, error) {
 	for openset.Size() > 0 {
 		currentStep, _ := openset.Remove()
 		slog.Debug("expanding node", "current step", currentStep)
-		currentGScore := maze.getGScore(currentStep)
 
 		if currentStep.position.Equal(maze.endPosition) {
-			maze.reconstructPath(currentStep, cameFrom)
-			return currentGScore, nil
+			maze.printOptimalPath(currentStep, cameFrom)
+			return maze.getGScore(currentStep), nil
 		}
 
-		maze.expandStep(currentStep, openset, cameFrom)
+		maze.expandStepSingleOptimalPath(currentStep, openset, cameFrom)
 	}
 
 	return -1, errors.New("could not find path to end")
+}
+
+// Find the optimal path using A* pathfinding
+func (maze Maze) ComputeCoordinatesOnAnyOptimalPath() (int, error) {
+	pathfindStepComparator := func(a, b pathfindStepData) int {
+		return maze.getFScore(a) - maze.getFScore(b)
+	}
+	openset := priorityqueue.New(pathfindStepComparator)
+	cameFrom := make(map[pathfindStepData][]pathfindStepData)
+
+	initialPosition := pathfindStepData{
+		position:          maze.startPosition,
+		incomingDirection: gridutils.DIRECTION_RIGHT,
+	}
+	maze.gScore[initialPosition] = 0
+	maze.fScore[initialPosition] = maze.heuristic(initialPosition)
+	openset.Add(initialPosition)
+
+	optimalPathScore := math.MaxInt
+
+	// Move forward until we have found *an* optimal path
+	for openset.Size() > 0 {
+		currentStep, _ := openset.Remove()
+		if maze.getGScore(currentStep) > optimalPathScore {
+			break
+		}
+
+		slog.Debug("expanding node", "current step", currentStep)
+
+		if currentStep.position.Equal(maze.endPosition) {
+			optimalPathScore = maze.getGScore(currentStep)
+		}
+
+		maze.expandStepAllOptimalPaths(currentStep, openset, cameFrom)
+	}
+
+	if optimalPathScore == math.MaxInt {
+		return -1, errors.New("could not find path to end")
+	}
+
+	reconstructedStepQueue := arrayqueue.New[pathfindStepData]()
+	for _, direction := range []gridutils.Direction{gridutils.DIRECTION_UP, gridutils.DIRECTION_RIGHT, gridutils.DIRECTION_DOWN, gridutils.DIRECTION_LEFT} {
+		possibleEndStep := pathfindStepData{
+			position:          maze.endPosition,
+			incomingDirection: direction,
+		}
+		if _, ok := cameFrom[possibleEndStep]; ok {
+			reconstructedStepQueue.Add(possibleEndStep)
+		}
+	}
+
+	coordinatesOnAnyOptimalPath := hashset.New[gridutils.Coordinate]()
+	for reconstructedStepQueue.Size() > 0 {
+		reconstructedStep, _ := reconstructedStepQueue.Remove()
+		coordinatesOnAnyOptimalPath.Add(reconstructedStep.position)
+		for _, cameFromStep := range cameFrom[reconstructedStep] {
+			reconstructedStepQueue.Add(cameFromStep)
+		}
+	}
+
+	maze.printCoordinatesOnAnyOptimalPath(coordinatesOnAnyOptimalPath)
+	return coordinatesOnAnyOptimalPath.Size(), nil
 }
