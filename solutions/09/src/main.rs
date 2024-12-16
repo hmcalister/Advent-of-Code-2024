@@ -64,10 +64,15 @@ fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
 }
 
 fn part02(input_file_reader: BufReader<File>) -> Option<i64> {
+    let mut input: Vec<u8> =  Vec::new();
     for line_result in input_file_reader.lines() {
         let line = line_result.unwrap();
         debug!("line" = line, "read line from input file");
+        input.extend_from_slice(line.as_bytes());
     }
-
-    None
+    let mut disk = diskmap::parse_input_to_diskmap(input);
+    disk.defragment_file_wise().expect("error during defragment file-wise");
+    debug!(?disk, "finished defragmenting");
+    let checksum = disk.compute_checksum();
+    Some(checksum)
 }

@@ -140,4 +140,37 @@ impl DiskMap {
 
         Ok(())
     }
+
+    pub fn defragment_file_wise(&mut self) -> Result<(), Box<dyn Error>> {
+        if self.file_blocks.len() == 0 {
+            return Err("cannot defragment an empty disk".into());
+        }
+        trace!("prior disk map"=%format!("\n{self}"), "before updating");
+
+        let mut current_reverse_file_index = self.file_blocks.len()-1;
+        'reverse_file_loop: while current_reverse_file_index > 0 {
+            let current_reverse_file_length = self.file_blocks[current_reverse_file_index].length;
+            for current_forward_file_index in 0..current_reverse_file_index {
+                let current_forward_file = &self.file_blocks[current_forward_file_index];
+                let next_forward_file = &self.file_blocks[current_forward_file_index + 1];
+                let current_forward_file_end_index =
+                current_forward_file.start + current_forward_file.length;
+                let current_block_gap = next_forward_file.start - current_forward_file_end_index;
+                // trace!(?current_forward_file_index, ?current_reverse_file_index, ?current_reverse_file_length, ?current_block_gap);
+                if current_block_gap >= current_reverse_file_length {
+                    let mut current_reverse_file =
+                        self.file_blocks.remove(current_reverse_file_index);
+                    current_reverse_file.start = current_forward_file_end_index;
+                    self.file_blocks
+                        .insert(current_forward_file_index + 1, current_reverse_file);
+                    trace!("updated disk map"=%format!("\n{self}"), "inserted index"=?current_forward_file_index+1, "found gap large enough for reverse file");
+                    continue 'reverse_file_loop;
+                }
+            }
+            // trace!("updated disk map"=%format!("\n{self}"), ?current_reverse_file_index, "no gap found for reverse file");
+            current_reverse_file_index-=1;
+        }
+
+        Ok(())
+    }
 }
