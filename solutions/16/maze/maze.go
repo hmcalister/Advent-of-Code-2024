@@ -243,10 +243,10 @@ func (maze Maze) expandStepAllOptimalPaths(
 	}
 }
 
+func (maze Maze) printOptimalPath(finalStep pathfindStepData, cameFrom map[pathfindStepData]pathfindStepData) {
 	completePathSteps := make(map[gridutils.Coordinate]pathfindStepData)
 	reconstructedStep := finalStep
 	for reconstructedStep.position != maze.startPosition {
-		fmt.Printf("reconstructing path: %+v\n", reconstructedStep)
 		completePathSteps[reconstructedStep.position] = reconstructedStep
 		reconstructedStep = cameFrom[reconstructedStep]
 	}
