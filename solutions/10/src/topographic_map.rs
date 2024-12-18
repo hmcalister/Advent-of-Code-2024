@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use rayon::prelude::*;
 
 #[allow(unused_imports)]
 use tracing::{debug, error, info, trace};
@@ -113,7 +114,7 @@ impl TopographicMap {
 
     pub fn count_trailhead_scores(&self) -> i64 {
         self.trailheads
-            .iter()
+            .par_iter()
             .map(|trailhead| {
                 let reachable_trailheads = self.find_reachable_trailends(*trailhead);
                 let trailhead_score = reachable_trailheads.len() as i64;
@@ -125,7 +126,7 @@ impl TopographicMap {
 
     pub fn count_trailhead_ratings(&self) -> i64 {
         self.trailheads
-            .iter()
+            .par_iter()
             .map(|trailhead| {
                 let trailhead_rating = self.find_coordinate_rating(*trailhead);
                 debug!(?trailhead, ?trailhead_rating, "found rating for trailhead");
