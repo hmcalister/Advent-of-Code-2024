@@ -2,10 +2,16 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"flag"
+	"fmt"
+	"hmcalister/AdventOfCode/gridutils"
+	"hmcalister/AdventOfCode/maze"
 	"log/slog"
 	"os"
 	"runtime/pprof"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -63,6 +69,42 @@ func main() {
 	}
 
 	slog.Info("computation completed", "result", result, "computation time elapsed (ns)", computationEndTime.Sub(computationStartTime).Nanoseconds())
+}
+
+func parseInput(fileScanner *bufio.Scanner) (int, int, []gridutils.Coordinate) {
+	if !fileScanner.Scan() {
+		slog.Error("input file is empty")
+		os.Exit(1)
+	}
+	mazeDimensionStr := strings.Split(fileScanner.Text(), ",")
+	if len(mazeDimensionStr) != 2 {
+		slog.Error("maze dimension string does not match expected format", "maze dimension string", mazeDimensionStr)
+		os.Exit(1)
+	}
+	mazeWidth, mazeWidthErr := strconv.Atoi(mazeDimensionStr[0])
+	mazeHeight, mazeHeightErr := strconv.Atoi(mazeDimensionStr[1])
+	if errors.Join(mazeWidthErr, mazeHeightErr) != nil {
+		slog.Error("could not parse maze dimension string to integer", "maze dimension string", mazeDimensionStr)
+		os.Exit(1)
+	}
+
+	fallingByteCoords := make([]gridutils.Coordinate, 0)
+	for fileScanner.Scan() {
+		fallingByteCoordStr := strings.Split(fileScanner.Text(), ",")
+		if len(fallingByteCoordStr) != 2 {
+			slog.Error("falling byte string does not match expected format", "falling byte string", mazeDimensionStr)
+			os.Exit(1)
+		}
+		byteX, byteXErr := strconv.Atoi(fallingByteCoordStr[0])
+		byteY, byteYErr := strconv.Atoi(fallingByteCoordStr[1])
+		if errors.Join(byteXErr, byteYErr) != nil {
+			slog.Error("could not parse falling byte string to integer", "falling byte string", fallingByteCoordStr)
+			os.Exit(1)
+		}
+		fallingByteCoords = append(fallingByteCoords, gridutils.Coordinate{X: byteX, Y: byteY})
+	}
+
+	return mazeWidth, mazeHeight, fallingByteCoords
 }
 
 func Part01(fileScanner *bufio.Scanner) (int, error) {
