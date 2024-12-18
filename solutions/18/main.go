@@ -108,7 +108,17 @@ func parseInput(fileScanner *bufio.Scanner) (int, int, []gridutils.Coordinate) {
 }
 
 func Part01(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	mazeWidth, mazeHeight, fallingByteCoords := parseInput(fileScanner)
+	slog.Debug("parsed input", "maze width", mazeWidth, "maze height", mazeHeight, "num falling bytes", len(fallingByteCoords))
+	maze := maze.NewMaze(mazeWidth, mazeHeight, fallingByteCoords[:1024])
+	fmt.Println(maze)
+	optimalPath, err := maze.ComputeOptimalPath()
+	if err != nil {
+		return -1, err
+	}
+	fmt.Println(maze.StringWithPath(optimalPath))
+
+	return len(optimalPath) - 1, nil
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
