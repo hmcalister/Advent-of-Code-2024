@@ -1,16 +1,16 @@
-use std::collections::HashMap;
+use rustc_hash::FxHashMap;
 
 #[allow(unused_imports)]
 use tracing::{debug, error, info, trace};
 
 #[derive(Debug)]
 pub struct StoneData {
-    stone_counts: HashMap<u64, i64>,
+    stone_counts: FxHashMap<u64, i64>,
 }
 
 pub fn new(initial_stones: &Vec<u64>) -> StoneData {
     let mut stone_data = StoneData {
-        stone_counts: HashMap::new(),
+        stone_counts: FxHashMap::default(),
     };
 
     for stone in initial_stones.iter() {
@@ -22,7 +22,7 @@ pub fn new(initial_stones: &Vec<u64>) -> StoneData {
 
 impl StoneData {
     pub fn blink(&mut self) {
-        let mut new_stone_counts: HashMap<u64, i64> = HashMap::new();
+        let mut new_stone_counts: FxHashMap<u64, i64> = FxHashMap::default();
         for (&stone_value, &count) in &self.stone_counts {
             trace!(?stone_value, ?count, "computing stone blink update");
             if stone_value == 0 {
