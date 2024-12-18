@@ -125,16 +125,25 @@ func Part02(fileScanner *bufio.Scanner) (int, error) {
 	mazeWidth, mazeHeight, fallingByteCoords := parseInput(fileScanner)
 	slog.Debug("parsed input", "maze width", mazeWidth, "maze height", mazeHeight, "num falling bytes", len(fallingByteCoords))
 
-	for byteIndex := 0; byteIndex < len(fallingByteCoords); byteIndex += 1 {
-		slog.Info("attempting to block maze", "byte index", byteIndex, "total bytes", len(fallingByteCoords))
+	lowerSearchBound := 0
+	upperSearchBound := len(fallingByteCoords) + 1
+	var byteIndex int
+	for lowerSearchBound < upperSearchBound-1 {
+		byteIndex = (lowerSearchBound + upperSearchBound) / 2
+		slog.Info("attempting to block maze", "byte index", byteIndex, "lower search bound", lowerSearchBound, "upper search bound", upperSearchBound)
 		maze := maze.NewMaze(mazeWidth, mazeHeight, fallingByteCoords[:byteIndex+1])
 		_, err := maze.ComputeOptimalPath()
-		if err != nil {
-			fmt.Println(maze)
-			fmt.Println(byteIndex, fallingByteCoords[byteIndex])
-			return byteIndex, nil
+
+		if err == nil {
+			lowerSearchBound = byteIndex
+		} else {
+			upperSearchBound = byteIndex
 		}
 	}
 
-	return -1, errors.New("path always available")
+	if byteIndex == len(fallingByteCoords)+1 {
+		return -1, errors.New("path always available")
+	}
+
+	return byteIndex, nil
 }
