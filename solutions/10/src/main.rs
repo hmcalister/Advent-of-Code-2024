@@ -69,7 +69,8 @@ fn part02(input_file_reader: BufReader<File>) -> Option<i64> {
         debug!("line" = line, "read line from input file");
         map_data.push(line);
     }
-    let mut _topomap = new_topographic_map(map_data);
+    let topomap = new_topographic_map(map_data);
+    let total_rating = topomap.count_trailhead_ratings();
 
-    None
+    Some(total_rating)
 }
