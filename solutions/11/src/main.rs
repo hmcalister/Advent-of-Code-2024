@@ -75,10 +75,29 @@ fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
 }
 
 fn part02(input_file_reader: BufReader<File>) -> Option<i64> {
+    let mut initial_stones: Vec<u64> = Vec::new();
     for line_result in input_file_reader.lines() {
         let line = line_result.unwrap();
         debug!("line" = line, "read line from input file");
+        initial_stones.extend(
+            line.split_ascii_whitespace()
+                .map(|item| str::parse::<u64>(item))
+                .filter_map(|item| {
+                    if let Ok(value) = item {
+                        Some(value)
+                    } else {
+                        error!(?line, "error"=?item, "failed to parse input");
+                        None
+                    }
+                }),
+        );
     }
+    let mut stone_data = stone_data::new(&initial_stones);
+    debug!(?initial_stones, ?stone_data, "parsed initial stones input");
 
-    None
+    for blink_index in 1..=75 {
+        stone_data.blink();
+        debug!(?blink_index, ?stone_data, "blink complete")
+    }
+    Some(stone_data.total_stones())
 }
