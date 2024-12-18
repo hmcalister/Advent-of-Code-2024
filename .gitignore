@@ -2,4 +2,4 @@ target/
 .vscode
 puzzleInput
 log
-profile
+profile.json
