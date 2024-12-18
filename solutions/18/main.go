@@ -122,5 +122,19 @@ func Part01(fileScanner *bufio.Scanner) (int, error) {
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
+	mazeWidth, mazeHeight, fallingByteCoords := parseInput(fileScanner)
+	slog.Debug("parsed input", "maze width", mazeWidth, "maze height", mazeHeight, "num falling bytes", len(fallingByteCoords))
+
+	for byteIndex := 0; byteIndex < len(fallingByteCoords); byteIndex += 1 {
+		slog.Info("attempting to block maze", "byte index", byteIndex, "total bytes", len(fallingByteCoords))
+		maze := maze.NewMaze(mazeWidth, mazeHeight, fallingByteCoords[:byteIndex+1])
+		_, err := maze.ComputeOptimalPath()
+		if err != nil {
+			fmt.Println(maze)
+			fmt.Println(byteIndex, fallingByteCoords[byteIndex])
+			return byteIndex, nil
+		}
+	}
+
+	return -1, errors.New("path always available")
 }
