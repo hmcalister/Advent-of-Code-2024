@@ -138,10 +138,29 @@ fn part01(input_file_reader: BufReader<File>) -> Option<i64> {
 }
 
 fn part02(input_file_reader: BufReader<File>) -> Option<i64> {
-    for line_result in input_file_reader.lines() {
-        let line = line_result.unwrap();
-        debug!("line" = line, "read line from input file");
-    }
+    let mut claw_machines = match parse_input_to_claw_machines(input_file_reader) {
+        Ok(machines) => machines,
+        Err(e) => {
+            error!("error"=?e, "error occurred during input parsing");
+            return None;
+        }
+    };
+    trace!(?claw_machines, "parsed claw machines");
 
-    None
+    let total_cost: i64 = claw_machines
+        .iter_mut()
+        .filter_map(|machine| {
+            machine.update_prize_position(claw_machine::PRIZE_POSITION_OFFSET);
+            match machine.solve_machine() {
+            Ok(machine_result) => {
+                debug!(?machine, ?machine_result, "solved machine");
+                Some(machine_result)
+            },
+            Err(e) => {
+                trace!(?machine, "error"=?e, "could not solve machine");
+                None
+            }
+        }}).sum();
+
+    Some(total_cost)
 }
