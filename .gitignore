@@ -1,6 +1,8 @@
 .vscode
-
 puzzleInput
 main
 log
 profile
+
+target/
+profile.json
