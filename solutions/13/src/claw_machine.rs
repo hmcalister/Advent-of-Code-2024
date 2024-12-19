@@ -5,8 +5,9 @@ use nalgebra::{Matrix2, Vector2};
 use tracing::{debug, error, info, trace};
 
 
+pub const PRIZE_POSITION_OFFSET: Vector2<f64> = Vector2::new(10000000000000.0, 10000000000000.0);
 const BUTTON_COSTS: Vector2<f64> = Vector2::new(3.0, 1.0);
-const FLOAT_CLOSE_EPSILON: f64 = 0.000000001;
+const FLOAT_CLOSE_EPSILON: f64 = 0.0001;
 
 #[derive(Debug)]
 pub struct ClawMachine {
@@ -47,5 +48,9 @@ impl ClawMachine {
 
 
         Ok(button_pushes.dot(&BUTTON_COSTS) as i64)
+    }
+
+    pub fn update_prize_position(&mut self, prize_position_increment: Vector2<f64>) {
+        self.prize_position = self.prize_position + prize_position_increment;
     }
 }
