@@ -130,3 +130,43 @@ func Part01(fileScanner *bufio.Scanner) (int, error) {
 	return totalPossiblePatterns, nil
 }
 
+func Part02(fileScanner *bufio.Scanner) (int, error) {
+	towelAtoms, targetPatterns := parseInput(fileScanner)
+	towelCollection := towel.NewTowelCollection(towelAtoms)
+	slog.Debug("initialized towel collection", "towel collection", towelCollection, "target patterns", targetPatterns)
+
+	var counterWaitGroup sync.WaitGroup
+	var workerWaitGroup sync.WaitGroup
+	patternChannel := make(chan string)
+	resultsChannel := make(chan int)
+
+	totalPossiblePatterns := 0
+	counterWaitGroup.Add(1)
+	go func(resultsChannel chan int) {
+		defer counterWaitGroup.Done()
+		for result := range resultsChannel {
+			totalPossiblePatterns += result
+		}
+	}(resultsChannel)
+
+	for range 8 {
+		workerWaitGroup.Add(1)
+		go func(patternChannel chan string, resultsChannel chan int) {
+			defer workerWaitGroup.Done()
+
+			for pattern := range patternChannel {
+				resultsChannel <- towelCollection.PatternValidCombinations(pattern)
+			}
+		}(patternChannel, resultsChannel)
+	}
+
+	for _, pattern := range targetPatterns {
+		patternChannel <- pattern
+	}
+	close(patternChannel)
+	workerWaitGroup.Wait()
+	close(resultsChannel)
+	counterWaitGroup.Wait()
+
+	return totalPossiblePatterns, nil
+}
