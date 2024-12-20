@@ -4,10 +4,12 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"hmcalister/AdventOfCode/gridutils"
 	"hmcalister/AdventOfCode/maze"
 	"log/slog"
 	"os"
 	"runtime/pprof"
+	"slices"
 	"time"
 )
 
@@ -75,14 +77,40 @@ func Part01(fileScanner *bufio.Scanner) (int, error) {
 	mazeData := maze.NewMaze(mazeStrs)
 	fmt.Println(mazeData)
 
-	optimalPath, err := mazeData.ComputeOptimalPath()
+	honestPath, err := mazeData.ComputeOptimalPath()
 	if err != nil {
-		slog.Error("error when computing path", "error", err)
+		slog.Error("error when computing honest optimal path", "error", err)
 		return -1, err
 	}
-	fmt.Println(mazeData.StringWithPath(optimalPath))
 
-	return 0, nil
+	cheatedPathSavingCounts := make(map[int]int)
+	for honestPathIndex, honestPathStep := range honestPath {
+		for _, d := range gridutils.AllDirections {
+			// Step (twice) in specific direction
+			cheatedStep := honestPathStep.Step(d).Step(d)
+			cheatedStepIndex := slices.Index(honestPath, cheatedStep)
+
+			// If the cheated step is somewhere further along the path we can save time
+			// This also handles the case of the cheated step not being found (-1)
+			if cheatedStepIndex > honestPathIndex+2 {
+				cheatSaving := cheatedStepIndex - honestPathIndex - 2
+				// if cheatSaving > 60 {
+				// 	fmt.Printf("%vCheat Saving: %v\n", mazeData.StringWithPathAndCheat(honestPath, honestPathStep, d), cheatSaving)
+				// }
+				cheatedPathSavingCounts[cheatSaving] += 1
+			}
+		}
+	}
+
+	numCheatsAbove100 := 0
+	for cheatLength, cheatCount := range cheatedPathSavingCounts {
+		slog.Info("cheated path saving count", "cheated path saving", cheatLength, "number of cheats", cheatCount)
+		if cheatLength >= 100 {
+			numCheatsAbove100 += cheatCount
+		}
+	}
+
+	return numCheatsAbove100, nil
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
