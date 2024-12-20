@@ -149,4 +149,47 @@ func Part01(fileScanner *bufio.Scanner) (int, error) {
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
+	mazeStrs := make([]string, 0)
+	for fileScanner.Scan() {
+		mazeStrs = append(mazeStrs, fileScanner.Text())
+	}
+	mazeData := maze.NewMaze(mazeStrs)
+	fmt.Println(mazeData)
+
+	honestPath, err := mazeData.ComputeOptimalPath()
+	if err != nil {
+		slog.Error("error when computing honest optimal path", "error", err)
+		return -1, err
+	}
+
+	cheatedPathSavingCounts := make(map[int]int)
+	for honestPathIndex, honestPathStep := range honestPath {
+		slog.Debug("walking path", "current path index", honestPathIndex+1, "path length", len(honestPath))
+		allPossibleCheats := getAllCheatsUpToLength(honestPathStep, 20)
+		for _, cheatStep := range allPossibleCheats {
+			cheatLength := getCheatLength(honestPathStep, cheatStep)
+			cheatStepIndex := slices.Index(honestPath, cheatStep)
+			if cheatStepIndex > honestPathIndex+cheatLength {
+				cheatSaving := cheatStepIndex - honestPathIndex - cheatLength
+				cheatedPathSavingCounts[cheatSaving] += 1
+			}
+		}
+	}
+
+	cheatLengths := make([]int, 0)
+	for cheatLength := range cheatedPathSavingCounts {
+		cheatLengths = append(cheatLengths, cheatLength)
+	}
+	slices.Sort(cheatLengths)
+
+	numCheatsAbove100 := 0
+	for _, cheatLength := range cheatLengths {
+		cheatCount := cheatedPathSavingCounts[cheatLength]
+		slog.Info("cheated path saving count", "cheated path saving", cheatLength, "number of cheats", cheatCount)
+		if cheatLength >= 100 {
+			numCheatsAbove100 += cheatCount
+		}
+	}
+
+	return numCheatsAbove100, nil
 }
