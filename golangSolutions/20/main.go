@@ -10,6 +10,7 @@ import (
 	"os"
 	"runtime/pprof"
 	"slices"
+	"sync"
 	"time"
 )
 
@@ -162,17 +163,47 @@ func Part02(fileScanner *bufio.Scanner) (int, error) {
 		return -1, err
 	}
 
-	cheatedPathSavingCounts := make(map[int]int)
-	for honestPathIndex, honestPathStep := range honestPath {
-		slog.Debug("walking path", "current path index", honestPathIndex+1, "path length", len(honestPath))
-		allPossibleCheats := getAllCheatsUpToLength(honestPathStep, 20)
-		for _, cheatStep := range allPossibleCheats {
-			cheatLength := getCheatLength(honestPathStep, cheatStep)
-			cheatStepIndex := slices.Index(honestPath, cheatStep)
-			if cheatStepIndex > honestPathIndex+cheatLength {
-				cheatSaving := cheatStepIndex - honestPathIndex - cheatLength
-				cheatedPathSavingCounts[cheatSaving] += 1
+	var workerWaitGroup sync.WaitGroup
+	pathIndexChannel := make(chan int)
+	resultsChannel := make(chan map[int]int)
+
+	for range 12 {
+		workerWaitGroup.Add(1)
+		go func(pathIndexChannel chan int, resultsChannel chan map[int]int) {
+			defer workerWaitGroup.Done()
+
+			workerCheatCounts := make(map[int]int)
+			for honestPathIndex := range pathIndexChannel {
+				honestPathStep := honestPath[honestPathIndex]
+				allPossibleCheats := getAllCheatsUpToLength(honestPathStep, 20)
+				for _, cheatStep := range allPossibleCheats {
+					cheatLength := getCheatLength(honestPathStep, cheatStep)
+					cheatStepIndex := slices.Index(honestPath, cheatStep)
+					if cheatStepIndex > honestPathIndex+cheatLength {
+						cheatSaving := cheatStepIndex - honestPathIndex - cheatLength
+						workerCheatCounts[cheatSaving] += 1
+					}
+				}
 			}
+			resultsChannel <- workerCheatCounts
+		}(pathIndexChannel, resultsChannel)
+	}
+
+	for honestPathIndex := range honestPath {
+		slog.Debug("walking path", "current path index", honestPathIndex+1, "path length", len(honestPath))
+		pathIndexChannel <- honestPathIndex
+	}
+
+	close(pathIndexChannel)
+	go func() {
+		workerWaitGroup.Wait()
+		close(resultsChannel)
+	}()
+
+	cheatedPathSavingCounts := make(map[int]int)
+	for workerResult := range resultsChannel {
+		for k, v := range workerResult {
+			cheatedPathSavingCounts[k] += v
 		}
 	}
 
