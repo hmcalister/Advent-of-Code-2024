@@ -69,6 +69,39 @@ func main() {
 	slog.Info("computation completed", "result", result, "computation time elapsed (ns)", computationEndTime.Sub(computationStartTime).Nanoseconds())
 }
 
+func getAllCheatsUpToLength(initialPosition gridutils.Coordinate, maxCheatLength int) []gridutils.Coordinate {
+	allCheats := make([]gridutils.Coordinate, 0)
+	var remainingCheatLength int
+	for x := -maxCheatLength; x <= maxCheatLength; x += 1 {
+		if x >= 0 {
+			remainingCheatLength = maxCheatLength - x
+		} else {
+			remainingCheatLength = maxCheatLength + x
+		}
+		for y := -remainingCheatLength; y <= remainingCheatLength; y += 1 {
+			allCheats = append(allCheats, gridutils.Coordinate{
+				X: initialPosition.X + x,
+				Y: initialPosition.Y + y,
+			})
+		}
+	}
+
+	return allCheats
+}
+
+func getCheatLength(initialPosition, cheatPosition gridutils.Coordinate) int {
+	delX := initialPosition.X - cheatPosition.X
+	if delX < 0 {
+		delX *= -1
+	}
+	delY := initialPosition.Y - cheatPosition.Y
+	if delY < 0 {
+		delY *= -1
+	}
+
+	return delX + delY
+}
+
 func Part01(fileScanner *bufio.Scanner) (int, error) {
 	mazeStrs := make([]string, 0)
 	for fileScanner.Scan() {
