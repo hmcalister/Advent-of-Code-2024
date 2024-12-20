@@ -201,3 +201,37 @@ func (maze Maze) ComputeOptimalPath() ([]gridutils.Coordinate, error) {
 
 	return nil, errors.New("could not find path to end")
 }
+
+// --------------------------------------------------------------------------------
+// Problem specific pathfinding
+
+func (maze Maze) StringTwoStepCheat(cheatOrigin gridutils.Coordinate, cheatDirection gridutils.Direction) string {
+	mazeString := make([]rune, maze.mazeHeight*(maze.mazeWidth+1))
+	mazeStringIndex := 0
+	for y := 0; y < maze.mazeHeight; y += 1 {
+		for x := 0; x < maze.mazeWidth; x += 1 {
+			c := gridutils.Coordinate{X: x, Y: y}
+			if c == maze.endPosition {
+				mazeString[mazeStringIndex] = END_RUNE
+			} else if c == maze.startPosition {
+				mazeString[mazeStringIndex] = START_RUNE
+			} else if !maze.coordinateMap.Contains(c) {
+				mazeString[mazeStringIndex] = WALL_RUNE
+			} else {
+				mazeString[mazeStringIndex] = '.'
+			}
+			mazeStringIndex += 1
+		}
+		mazeString[mazeStringIndex] = '\n'
+		mazeStringIndex += 1
+	}
+
+	cheatedStep := cheatOrigin
+	for cheatStepIndex := range 2 {
+		cheatedStep = cheatedStep.Step(cheatDirection)
+		linearCoordinate := (maze.mazeWidth+1)*cheatedStep.Y + cheatedStep.X
+		mazeString[linearCoordinate] = rune(cheatStepIndex + 1 + '0')
+	}
+
+	return string(mazeString)
+}
