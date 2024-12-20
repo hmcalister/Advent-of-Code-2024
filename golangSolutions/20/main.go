@@ -118,25 +118,27 @@ func Part01(fileScanner *bufio.Scanner) (int, error) {
 
 	cheatedPathSavingCounts := make(map[int]int)
 	for honestPathIndex, honestPathStep := range honestPath {
-		for _, d := range gridutils.AllDirections {
-			// Step (twice) in specific direction
-			cheatedStep := honestPathStep.Step(d).Step(d)
-			cheatedStepIndex := slices.Index(honestPath, cheatedStep)
-
-			// If the cheated step is somewhere further along the path we can save time
-			// This also handles the case of the cheated step not being found (-1)
-			if cheatedStepIndex > honestPathIndex+2 {
-				cheatSaving := cheatedStepIndex - honestPathIndex - 2
-				// if cheatSaving > 60 {
-				// 	fmt.Printf("%vCheat Saving: %v\n", mazeData.StringWithPathAndCheat(honestPath, honestPathStep, d), cheatSaving)
-				// }
+		slog.Debug("walking path", "current path index", honestPathIndex+1, "path length", len(honestPath))
+		allPossibleCheats := getAllCheatsUpToLength(honestPathStep, 2)
+		for _, cheatStep := range allPossibleCheats {
+			cheatLength := getCheatLength(honestPathStep, cheatStep)
+			cheatStepIndex := slices.Index(honestPath, cheatStep)
+			if cheatStepIndex > honestPathIndex+cheatLength {
+				cheatSaving := cheatStepIndex - honestPathIndex - cheatLength
 				cheatedPathSavingCounts[cheatSaving] += 1
 			}
 		}
 	}
 
+	cheatLengths := make([]int, 0)
+	for cheatLength := range cheatedPathSavingCounts {
+		cheatLengths = append(cheatLengths, cheatLength)
+	}
+	slices.Sort(cheatLengths)
+
 	numCheatsAbove100 := 0
-	for cheatLength, cheatCount := range cheatedPathSavingCounts {
+	for _, cheatLength := range cheatLengths {
+		cheatCount := cheatedPathSavingCounts[cheatLength]
 		slog.Info("cheated path saving count", "cheated path saving", cheatLength, "number of cheats", cheatCount)
 		if cheatLength >= 100 {
 			numCheatsAbove100 += cheatCount
@@ -147,5 +149,4 @@ func Part01(fileScanner *bufio.Scanner) (int, error) {
 }
 
 func Part02(fileScanner *bufio.Scanner) (int, error) {
-	return 0, nil
 }
