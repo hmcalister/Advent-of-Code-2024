@@ -11,5 +11,6 @@ const (
 )
 
 var (
-	directionMap = []Coordinate{{0, -1}, {1, 0}, {0, 1}, {-1, 0}}
+	AllDirections = []Direction{DIRECTION_UP, DIRECTION_RIGHT, DIRECTION_DOWN, DIRECTION_LEFT}
+	directionMap  = []Coordinate{{0, -1}, {1, 0}, {0, 1}, {-1, 0}}
 )
